@@ -6,8 +6,38 @@ export type Region = 'tropical' | 'glacier' | 'volcanic' | 'mangrove' | 'ocean' 
 export type VerificationStatus = 'VERIFIED' | 'GAME_ESTIMATE' | 'UNKNOWN' | 'RECHECK_REQUIRED';
 export type LengthType = 'TL' | 'FL' | 'SL';
 export type BehaviorPattern =
-  | 'solitary' | 'schooling' | 'evasive' | 'ambush' | 'benthic_rest'
-  | 'prey_chase' | 'nocturnal' | 'vertical_migration' | 'territorial' | 'special';
+  // 기본 행동
+  | 'solitary' | 'schooling' | 'pair_bonding' | 'loose_aggregation'
+  // 먹이 행동
+  | 'ambush_predator' | 'active_hunter' | 'filter_feeder' | 'grazer' | 'scavenger'
+  | 'planktivore' | 'herbivore' | 'omnivore' | 'piscivore' | 'invertebrate_feeder'
+  // 기존 호환 (레거시)
+  | 'ambush' | 'prey_chase' | 'benthic_rest' | 'special'
+  // 이동 패턴
+  | 'migratory' | 'resident' | 'vertical_migration' | 'diel_migration'
+  | 'nomadic' | 'site_attached'
+  // 시간대
+  | 'diurnal' | 'nocturnal' | 'crepuscular' | 'cathemeral'
+  // 서식 방식
+  | 'pelagic' | 'benthic' | 'demersal' | 'reef_associated' | 'cave_dweller'
+  | 'open_water' | 'coastal' | 'estuarine'
+  // 특수 행동
+  | 'territorial' | 'evasive' | 'camouflage' | 'mimicry' | 'bioluminescent'
+  | 'cleaner' | 'symbiotic' | 'parasitic' | 'venomous' | 'electric'
+  | 'gliding' | 'jumping' | 'burrowing' | 'nest_builder' | 'parental_care'
+  | 'schooling_sync' | 'chain_formation' | 'hunting_cooperation';
+
+export type HabitatType =
+  | 'coral_reef' | 'reef_slope' | 'reef_flat' | 'lagoon'
+  | 'seagrass_bed' | 'kelp_forest' | 'mangrove_roots'
+  | 'rocky_shore' | 'sandy_bottom' | 'muddy_bottom' | 'rubble_zone'
+  | 'open_ocean' | 'epipelagic' | 'mesopelagic' | 'bathypelagic' | 'abyssopelagic'
+  | 'deep_sea_floor' | 'hydrothermal_vent' | 'cold_seep' | 'underwater_cave'
+  | 'estuary' | 'river_mouth' | 'tidal_pool'
+  | 'polar_ice' | 'glacier_fjord' | 'volcanic_vent'
+  | 'coastal' | 'offshore' | 'continental_shelf';
+
+export type ActivityPattern = 'diurnal' | 'nocturnal' | 'crepuscular' | 'cathemeral';
 
 export interface SpeciesData {
   id: number;
@@ -35,6 +65,24 @@ export interface SpeciesData {
   rarity: number;
   sellBasePrice: number;
   observationPoints: number;
+  
+  // 실제 서식 환경 (세밀한 환경 구분)
+  habitat: HabitatType[];
+  
+  // 활동 시간대
+  activityPattern: ActivityPattern;
+  
+  // 군집 크기 (0 = 단독, 1-10 = 소그룹, 11-100 = 중그룹, 100+ = 대군집)
+  schoolSize: { min: number; max: number };
+  
+  // 이동 속도 (m/s)
+  swimSpeed: { slow: number; normal: number; fast: number };
+  
+  // 먹이 사슬 위치 (1 = 최하위, 5 = 최상위 포식자)
+  trophicLevel: number;
+  
+  // 실제 서식지 설명
+  habitatDescription: string;
 }
 
 function sp(
@@ -42,7 +90,11 @@ function sp(
   avgL: number, avgW: number, maxL: number, maxW: number,
   a: number, b: number, lt: LengthType, ver: VerificationStatus, src: string,
   catchable: boolean, prot: boolean, behaviors: BehaviorPattern[],
-  dMin: number, dMax: number, rarity: number, price: number, obsPts: number
+  dMin: number, dMax: number, rarity: number, price: number, obsPts: number,
+  habitat: HabitatType[] = [], activityPattern: ActivityPattern = 'diurnal',
+  schoolSize: { min: number; max: number } = { min: 1, max: 1 },
+  swimSpeed: { slow: number; normal: number; fast: number } = { slow: 0.5, normal: 1.5, fast: 3.0 },
+  trophicLevel: number = 3, habitatDescription: string = ''
 ): SpeciesData {
   return {
     id, name, scientificName: sci, region,
@@ -55,7 +107,8 @@ function sp(
     lengthType: lt, verification: ver, verificationSource: src,
     catchable, protected: prot, behaviors,
     depthMinM: dMin, depthMaxM: dMax,
-    rarity, sellBasePrice: price, observationPoints: obsPts
+    rarity, sellBasePrice: price, observationPoints: obsPts,
+    habitat, activityPattern, schoolSize, swimSpeed, trophicLevel, habitatDescription
   };
 }
 
@@ -63,26 +116,46 @@ export const SPECIES_DATA: SpeciesData[] = [
   // ═══════════════════════════════════════════
   // TROPICAL ZONE (ID 1-40) — 어류만
   // ═══════════════════════════════════════════
-  sp(1, '흰동가리', 'Amphiprion ocellaris', 'tropical', 10, 0.05, 12, 0.08, 0.00004, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['territorial', 'special'], 1, 8, 1, 50, 10),
-  sp(2, '흰꼬리나비고기', 'Chaetodon epippus', 'tropical', 18, 0.15, 22, 0.2, 0.00005, 2.9, 'FL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'territorial'], 2, 20, 2, 100, 12),
-  sp(3, '나폴레옹피쉬', 'Cheilinus undulatus', 'tropical', 150, 60, 230, 190, 0.00001, 3.1, 'TL', 'VERIFIED', 'FishBase/IUCN', true, true, ['solitary', 'special'], 2, 60, 5, 5000, 100),
-  sp(4, '만새기', 'Coryphaena hippurus', 'tropical', 150, 15, 200, 40, 0.000008, 3.05, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'prey_chase'], 0, 80, 2, 300, 20),
-  sp(5, '흑기새치', 'Istiompax indica', 'tropical', 300, 200, 500, 700, 0.000005, 3.1, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'prey_chase'], 0, 200, 4, 2000, 50),
-  sp(6, '대왕가오리', 'Mobula birostris', 'tropical', 500, 1200, 700, 2000, 0.000003, 3.05, 'TL', 'VERIFIED', 'FishBase/IUCN', true, true, ['schooling', 'vertical_migration'], 0, 120, 5, 10000, 150),
-  sp(7, '그린퍼퍼피시', 'Synchiropus splendidus', 'tropical', 6, 0.01, 8, 0.015, 0.0001, 2.8, 'TL', 'VERIFIED', 'FishBase', true, false, ['benthic_rest', 'solitary'], 2, 20, 3, 200, 25),
-  sp(8, '나비고기', 'Chaetodon auriga', 'tropical', 20, 0.2, 25, 0.3, 0.00004, 2.9, 'FL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'territorial'], 1, 30, 1, 80, 10),
-  sp(9, '트럼펫피쉬', 'Aulostomus chinensis', 'tropical', 80, 0.8, 120, 1.5, 0.00001, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush', 'solitary'], 1, 40, 2, 150, 15),
-  sp(10, '쥐치', 'Balistoides viridescens', 'tropical', 50, 3, 75, 6, 0.00002, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['territorial', 'solitary'], 1, 40, 2, 200, 20),
-  sp(11, '흰지느러미흉상어', 'Carcharhinus amblyrhynchos', 'tropical', 180, 40, 250, 70, 0.000006, 3.05, 'TL', 'VERIFIED', 'FishBase', true, false, ['schooling', 'prey_chase'], 5, 60, 3, 800, 40),
-  sp(12, '레오파드레이', 'Stegostoma tigrinum', 'tropical', 250, 80, 350, 150, 0.000004, 3.0, 'TL', 'VERIFIED', 'FishBase', true, true, ['benthic_rest', 'nocturnal'], 2, 60, 4, 3000, 80),
-  sp(13, '해마', 'Hippocampus kuda', 'tropical', 15, 0.02, 20, 0.04, 0.00005, 2.8, 'TL', 'VERIFIED', 'FishBase', true, true, ['solitary', 'benthic_rest'], 1, 20, 3, 500, 30),
-  sp(14, '밀레니엄피쉬', 'Pterois miles', 'tropical', 35, 0.5, 40, 0.8, 0.00003, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush', 'nocturnal'], 2, 40, 2, 180, 20),
-  sp(15, '리본뱀장어', 'Rhinomuraena quaesita', 'tropical', 100, 1.5, 130, 2.5, 0.000008, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush', 'benthic_rest'], 5, 50, 3, 400, 35),
-  sp(16, '맨다린피쉬', 'Synchiropus picturatus', 'tropical', 6, 0.01, 8, 0.015, 0.0001, 2.8, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'nocturnal'], 2, 15, 3, 250, 30),
-  sp(17, '흰지느러미흉상어', 'Triaenodon obesus', 'tropical', 160, 30, 260, 55, 0.000006, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['nocturnal', 'solitary'], 5, 40, 3, 600, 35),
-  sp(18, '청자갈치', 'Fistularia commersonii', 'tropical', 120, 0.8, 180, 1.5, 0.000005, 2.95, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush', 'solitary'], 1, 40, 2, 130, 15),
-  sp(19, '복어', 'Arothron hispidus', 'tropical', 45, 3, 60, 5, 0.00003, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'benthic_rest'], 3, 50, 2, 180, 18),
-  sp(20, '홍어', 'Dasyatis akajei', 'tropical', 60, 5, 120, 15, 0.00002, 2.95, 'TL', 'VERIFIED', 'FishBase', true, false, ['benthic_rest', 'solitary'], 5, 60, 2, 200, 15),
+  sp(1, '흰동가리', 'Amphiprion ocellaris', 'tropical', 10, 0.05, 12, 0.08, 0.00004, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['territorial', 'symbiotic', 'parental_care'], 1, 8, 1, 50, 10,
+    ['coral_reef', 'reef_flat', 'lagoon'], 'diurnal', { min: 2, max: 6 }, { slow: 0.3, normal: 0.8, fast: 1.5 }, 2, '산호초의 말미잘과 공생. 영역 방어적이며 부부가 함께 생활.'),
+  sp(2, '흰꼬리나비고기', 'Chaetodon epippus', 'tropical', 18, 0.15, 22, 0.2, 0.00005, 2.9, 'FL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'territorial', 'reef_associated'], 2, 20, 2, 100, 12,
+    ['coral_reef', 'reef_slope'], 'diurnal', { min: 1, max: 2 }, { slow: 0.5, normal: 1.2, fast: 2.0 }, 3, '산호초 사면에서 단독 또는 쌍으로 생활. 산호 폴립을 먹이로 삼음.'),
+  sp(3, '나폴레옹피쉬', 'Cheilinus undulatus', 'tropical', 150, 60, 230, 190, 0.00001, 3.1, 'TL', 'VERIFIED', 'FishBase/IUCN', true, true, ['solitary', 'active_hunter', 'reef_associated'], 2, 60, 5, 5000, 100,
+    ['coral_reef', 'reef_slope', 'lagoon'], 'diurnal', { min: 1, max: 1 }, { slow: 0.8, normal: 2.0, fast: 4.0 }, 4, '산호초의 최상위 포식자. 큰 이빨로 성게, 갑각류를 부숴먹음. 느리게 헤엄치지만 강력함.'),
+  sp(4, '만새기', 'Coryphaena hippurus', 'tropical', 150, 15, 200, 40, 0.000008, 3.05, 'TL', 'VERIFIED', 'FishBase', true, false, ['active_hunter', 'piscivore', 'open_water'], 0, 80, 2, 300, 20,
+    ['open_ocean', 'epipelagic'], 'diurnal', { min: 2, max: 10 }, { slow: 2.0, normal: 5.0, fast: 10.0 }, 4, '표층을 빠르게 헤엄치는 포식자. 날치 등을 잡아먹으며 가끔 배 근처로 옴.'),
+  sp(5, '흑기새치', 'Istiompax indica', 'tropical', 300, 200, 500, 700, 0.000005, 3.1, 'TL', 'VERIFIED', 'FishBase', true, false, ['active_hunter', 'piscivore', 'open_water'], 0, 200, 4, 2000, 50,
+    ['open_ocean', 'epipelagic'], 'diurnal', { min: 1, max: 3 }, { slow: 3.0, normal: 8.0, fast: 15.0 }, 5, '대양의 최상위 포식자. 긴 부리로 먹이를 기절시킨 후 잡음. 매우 빠름.'),
+  sp(6, '대왕가오리', 'Mobula birostris', 'tropical', 500, 1200, 700, 2000, 0.000003, 3.05, 'TL', 'VERIFIED', 'FishBase/IUCN', true, true, ['filter_feeder', 'planktivore', 'open_water'], 0, 120, 5, 10000, 150,
+    ['open_ocean', 'epipelagic', 'coastal'], 'diurnal', { min: 1, max: 50 }, { slow: 1.5, normal: 4.0, fast: 8.0 }, 2, '거대한 날개로 플랑크톤을 걸러먹음. 가끔 작은 무리로 이동하며 점프하기도 함.'),
+  sp(7, '그린퍼퍼피시', 'Synchiropus splendidus', 'tropical', 6, 0.01, 8, 0.015, 0.0001, 2.8, 'TL', 'VERIFIED', 'FishBase', true, false, ['benthic', 'invertebrate_feeder', 'reef_associated'], 2, 20, 3, 200, 25,
+    ['coral_reef', 'rubble_zone'], 'diurnal', { min: 1, max: 2 }, { slow: 0.2, normal: 0.5, fast: 0.8 }, 2, '산호초 바닥에서 작은 무척추동물을 먹음. 화려한 색상으로 짝짓기 시 과시.'),
+  sp(8, '나비고기', 'Chaetodon auriga', 'tropical', 20, 0.2, 25, 0.3, 0.00004, 2.9, 'FL', 'VERIFIED', 'FishBase', true, false, ['omnivore', 'reef_associated', 'diurnal'], 1, 30, 1, 80, 10,
+    ['coral_reef', 'reef_slope'], 'diurnal', { min: 1, max: 4 }, { slow: 0.5, normal: 1.0, fast: 1.8 }, 2, '산호초에서 해조류와 작은 무척추동물을 먹음. 긴 주둥이로 틈새를 탐험.'),
+  sp(9, '트럼펫피쉬', 'Aulostomus chinensis', 'tropical', 80, 0.8, 120, 1.5, 0.00001, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush_predator', 'piscivore', 'reef_associated'], 1, 40, 2, 150, 15,
+    ['coral_reef', 'reef_slope'], 'diurnal', { min: 1, max: 3 }, { slow: 0.3, normal: 0.8, fast: 1.5 }, 3, '수직으로 서서 기다리다가 작은 물고기를 잡아먹음. 때때로 다른 물고기를 따라다님.'),
+  sp(10, '쥐치', 'Balistoides viridescens', 'tropical', 50, 3, 75, 6, 0.00002, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['territorial', 'invertebrate_feeder', 'reef_associated'], 1, 40, 2, 200, 20,
+    ['coral_reef', 'rubble_zone'], 'diurnal', { min: 1, max: 2 }, { slow: 0.5, normal: 1.2, fast: 2.0 }, 3, '강한 이빨로 성게, 조개, 갑각류를 부숴먹음. 산란기에는 매우 공격적.'),
+  sp(11, '흰지느러미흉상어', 'Carcharhinus amblyrhynchos', 'tropical', 180, 40, 250, 70, 0.000006, 3.05, 'TL', 'VERIFIED', 'FishBase', true, false, ['schooling', 'active_hunter', 'piscivore', 'reef_associated'], 5, 60, 3, 800, 40,
+    ['coral_reef', 'reef_slope', 'lagoon'], 'diurnal', { min: 3, max: 20 }, { slow: 1.5, normal: 3.5, fast: 7.0 }, 4, '산호초 주변을 무리지어 돌아다니는 상어. 물고기와 갑각류를 사냥.'),
+  sp(12, '레오파드레이', 'Stegostoma tigrinum', 'tropical', 250, 80, 350, 150, 0.000004, 3.0, 'TL', 'VERIFIED', 'FishBase', true, true, ['benthic', 'nocturnal', 'invertebrate_feeder', 'reef_associated'], 2, 60, 4, 3000, 80,
+    ['coral_reef', 'sandy_bottom', 'rubble_zone'], 'nocturnal', { min: 1, max: 3 }, { slow: 0.8, normal: 2.0, fast: 3.5 }, 3, '밤에 활동하는 바닥 상어. 낮에는 동굴에서 쉬고 밤에 사냥.'),
+  sp(13, '해마', 'Hippocampus kuda', 'tropical', 15, 0.02, 20, 0.04, 0.00005, 2.8, 'TL', 'VERIFIED', 'FishBase', true, true, ['site_attached', 'invertebrate_feeder', 'parental_care'], 1, 20, 3, 500, 30,
+    ['seagrass_bed', 'mangrove_roots', 'coral_reef'], 'diurnal', { min: 1, max: 2 }, { slow: 0.05, normal: 0.1, fast: 0.2 }, 2, '해초나 산호에 꼬리로 고정. 수컷이 알을 품는 독특한 번식 방식.'),
+  sp(14, '쏠배감펭', 'Pterois miles', 'tropical', 35, 0.5, 40, 0.8, 0.00003, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush_predator', 'venomous', 'nocturnal', 'reef_associated'], 2, 40, 2, 180, 20,
+    ['coral_reef', 'rubble_zone'], 'nocturnal', { min: 1, max: 2 }, { slow: 0.3, normal: 0.8, fast: 1.5 }, 3, '독 있는 지느러미로 방어. 밤에 사냥하며 화려한 지느러미를 펼침.'),
+  sp(15, '리본뱀장어', 'Rhinomuraena quaesita', 'tropical', 100, 1.5, 130, 2.5, 0.000008, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush_predator', 'piscivore', 'cave_dweller'], 5, 50, 3, 400, 35,
+    ['coral_reef', 'underwater_cave'], 'nocturnal', { min: 1, max: 2 }, { slow: 0.5, normal: 1.2, fast: 2.5 }, 4, '동굴 entrance에서 기다리다가 먹이를 잡음. 성별에 따라 색상이 다름.'),
+  sp(16, '맨다린피쉬', 'Synchiropus picturatus', 'tropical', 6, 0.01, 8, 0.015, 0.0001, 2.8, 'TL', 'VERIFIED', 'FishBase', true, false, ['benthic', 'invertebrate_feeder', 'crepuscular', 'reef_associated'], 2, 15, 3, 250, 30,
+    ['coral_reef', 'rubble_zone'], 'crepuscular', { min: 1, max: 2 }, { slow: 0.2, normal: 0.4, fast: 0.7 }, 2, '황혼에 짝짓기 춤을춤. 화려한 색상으로 유명.'),
+  sp(17, '흰지느러미흉상어', 'Triaenodon obesus', 'tropical', 160, 30, 260, 55, 0.000006, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['nocturnal', 'active_hunter', 'reef_associated'], 5, 40, 3, 600, 35,
+    ['coral_reef', 'underwater_cave'], 'nocturnal', { min: 1, max: 5 }, { slow: 1.0, normal: 2.5, fast: 5.0 }, 4, '밤에 활동하는 산호초 상어. 낮에는 동굴에서 여러 마리가 함께休息.'),
+  sp(18, '청자갈치', 'Fistularia commersonii', 'tropical', 120, 0.8, 180, 1.5, 0.000005, 2.95, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush_predator', 'piscivore', 'reef_associated'], 1, 40, 2, 130, 15,
+    ['coral_reef', 'seagrass_bed', 'sandy_bottom'], 'diurnal', { min: 1, max: 3 }, { slow: 0.8, normal: 2.0, fast: 4.0 }, 3, '긴 주둥이로 빠르게 먹이를 잡음. 산호초 주변에서 기다림.'),
+  sp(19, '복어', 'Arothron hispidus', 'tropical', 45, 3, 60, 5, 0.00003, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['omnivore', 'invertebrate_feeder', 'territorial'], 3, 50, 2, 180, 18,
+    ['coral_reef', 'rubble_zone'], 'diurnal', { min: 1, max: 2 }, { slow: 0.5, normal: 1.0, fast: 1.8 }, 3, '위협을 느끼면 몸을 부풀림. 강한 이빨로 산호, 조개를 깨뜨림.'),
+  sp(20, '홍어', 'Dasyatis akajei', 'tropical', 60, 5, 120, 15, 0.00002, 2.95, 'TL', 'VERIFIED', 'FishBase', true, false, ['benthic', 'invertebrate_feeder', 'coastal'], 5, 60, 2, 200, 15,
+    ['sandy_bottom', 'muddy_bottom', 'coastal'], 'diurnal', { min: 1, max: 5 }, { slow: 0.5, normal: 1.5, fast: 3.0 }, 3, '모래 바닥에 숨어서 갑각류를 먹음. 독 있는 꼬리침으로 방어.'),
   sp(21, '꽃돔', 'Plectropomus leopardus', 'tropical', 70, 5, 150, 20, 0.00001, 3.05, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush', 'territorial'], 3, 50, 2, 350, 25),
   sp(22, '부채산호돔', 'Heniochus acuminatus', 'tropical', 22, 0.2, 28, 0.3, 0.00004, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['schooling'], 2, 30, 1, 90, 10),
   sp(23, '자이언트그루퍼', 'Epinephelus lanceolatus', 'tropical', 250, 150, 400, 400, 0.000004, 3.1, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush', 'solitary'], 5, 100, 4, 2500, 60),
@@ -224,8 +297,10 @@ export const SPECIES_DATA: SpeciesData[] = [
   sp(143, '대왕참치', 'Thunnus orientalis', 'ocean', 200, 80, 300, 200, 0.000005, 3.1, 'TL', 'VERIFIED', 'ICCAT', true, false, ['schooling', 'prey_chase'], 0, 250, 3, 600, 25),
   sp(144, '귀상어', 'Carcharhinus plumbeus', 'ocean', 200, 70, 280, 150, 0.000005, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['schooling', 'prey_chase'], 10, 100, 3, 500, 30),
   sp(145, '유영오징어어', 'Ommastrephes bartramii_fish', 'ocean', 25, 0.3, 35, 0.6, 0.00004, 2.9, 'TL', 'GAME_ESTIMATE', 'Estimated', true, false, ['schooling', 'vertical_migration'], 0, 300, 1, 60, 8),
-  sp(146, '청새리상어', 'Isurus oxyrinchus', 'ocean', 300, 100, 400, 250, 0.000004, 3.05, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'prey_chase'], 0, 150, 4, 1200, 50),
-  sp(147, '고래상어', 'Rhincodon typus', 'ocean', 800, 5000, 1200, 15000, 0.000001, 2.9, 'TL', 'VERIFIED', 'FishBase/IUCN', true, true, ['solitary', 'vertical_migration'], 0, 200, 5, 10000, 200),
+  sp(146, '청새리상어', 'Isurus oxyrinchus', 'ocean', 300, 100, 400, 250, 0.000004, 3.05, 'TL', 'VERIFIED', 'FishBase', true, false, ['active_hunter', 'piscivore', 'open_water'], 0, 150, 4, 1200, 50,
+    ['open_ocean', 'epipelagic', 'offshore'], 'diurnal', { min: 1, max: 3 }, { slow: 3.0, normal: 8.0, fast: 15.0 }, 5, '대양에서 가장 빠른 상어. 참치와 고등어를 사냥. 온혈성으로 체온 유지.'),
+  sp(147, '고래상어', 'Rhincodon typus', 'ocean', 800, 5000, 1200, 15000, 0.000001, 2.9, 'TL', 'VERIFIED', 'FishBase/IUCN', true, true, ['filter_feeder', 'planktivore', 'open_water'], 0, 200, 5, 10000, 200,
+    ['open_ocean', 'epipelagic', 'coastal'], 'diurnal', { min: 1, max: 5 }, { slow: 2.0, normal: 5.0, fast: 8.0 }, 2, '세계에서 가장 큰 물고기. 입을 벌리고 플랑크톤을 걸러먹음. 온순함.'),
   sp(148, '부레돔', 'Seriola dumerili', 'ocean', 120, 20, 180, 50, 0.000007, 3.05, 'TL', 'VERIFIED', 'FishBase', true, false, ['schooling', 'prey_chase'], 0, 100, 2, 300, 18),
   sp(149, '유영부리갈치', 'Makaira nigricans', 'ocean', 350, 200, 500, 600, 0.000003, 3.1, 'TL', 'VERIFIED', 'ICCAT', true, false, ['solitary', 'prey_chase'], 0, 200, 4, 1500, 45),
   sp(150, '대양해파리어', 'Regalecus glesne', 'ocean', 300, 100, 800, 300, 0.000002, 2.8, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'vertical_migration'], 0, 500, 5, 3000, 80),
@@ -262,11 +337,16 @@ export const SPECIES_DATA: SpeciesData[] = [
   sp(177, '귀신상어', 'Chlamydoselachus anguineus', 'deepsea', 150, 3, 200, 5, 0.000005, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'prey_chase'], 100, 1500, 4, 800, 50),
   sp(178, '심해문어어', 'Grimpoteuthis bathynectes_fish', 'deepsea', 18, 0.05, 25, 0.1, 0.00006, 2.8, 'TL', 'GAME_ESTIMATE', 'Estimated', true, false, ['solitary', 'vertical_migration'], 1000, 5000, 3, 300, 30),
   sp(179, '대왕오징어어', 'Architeuthis dux_fish', 'deepsea', 50, 0.5, 80, 1.5, 0.00002, 2.9, 'TL', 'GAME_ESTIMATE', 'Estimated', true, false, ['solitary', 'vertical_migration'], 500, 2000, 5, 1500, 80),
-  sp(180, '블롭피쉬', 'Psychrolutes marcidus', 'deepsea', 40, 5, 60, 10, 0.00003, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['benthic_rest', 'solitary'], 600, 1200, 3, 300, 30),
-  sp(181, '심해장어', 'Synaphobranchus affinis', 'deepsea', 60, 0.5, 100, 1.5, 0.00001, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush', 'benthic_rest'], 200, 2500, 2, 150, 18),
-  sp(182, '용어', 'Alepisauroides lacrymatus', 'deepsea', 60, 1, 100, 3, 0.00001, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'vertical_migration'], 500, 3000, 3, 250, 25),
-  sp(183, '심해가오리', 'Bathyraja abyssicola', 'deepsea', 60, 3, 90, 6, 0.00002, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['benthic_rest', 'solitary'], 500, 2500, 2, 180, 18),
-  sp(184, '투명머리', 'Macropinna microstoma', 'deepsea', 12, 0.03, 18, 0.05, 0.00008, 2.8, 'TL', 'VERIFIED', 'MBARI', true, false, ['solitary', 'vertical_migration'], 300, 1000, 4, 500, 50),
+  sp(180, '블롭피쉬', 'Psychrolutes marcidus', 'deepsea', 40, 5, 60, 10, 0.00003, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['benthic', 'scavenger', 'demersal'], 600, 1200, 3, 300, 30,
+    ['deep_sea_floor', 'bathypelagic'], 'cathemeral', { min: 1, max: 1 }, { slow: 0.1, normal: 0.3, fast: 0.5 }, 3, '심해 바닥에 늘어져 있는 물고기. 젤리 같은 몸으로 에너지를 최소화.'),
+  sp(181, '심해장어', 'Synaphobranchus affinis', 'deepsea', 60, 0.5, 100, 1.5, 0.00001, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['ambush_predator', 'scavenger', 'benthic'], 200, 2500, 2, 150, 18,
+    ['deep_sea_floor', 'bathypelagic'], 'nocturnal', { min: 1, max: 3 }, { slow: 0.3, normal: 0.8, fast: 1.5 }, 3, '심해 바닥에서 죽은 동물을 먹음. 긴 몸으로 바닥을 따라 이동.'),
+  sp(182, '용어', 'Alepisauroides lacrymatus', 'deepsea', 60, 1, 100, 3, 0.00001, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['active_hunter', 'piscivore', 'vertical_migration'], 500, 3000, 3, 250, 25,
+    ['mesopelagic', 'bathypelagic'], 'cathemeral', { min: 1, max: 2 }, { slow: 0.5, normal: 1.5, fast: 3.0 }, 4, '중층에서 심해로 수직 이동. 큰 이빨로 다른 물고기를 사냥.'),
+  sp(183, '심해가오리', 'Bathyraja abyssicola', 'deepsea', 60, 3, 90, 6, 0.00002, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['benthic', 'invertebrate_feeder', 'demersal'], 500, 2500, 2, 180, 18,
+    ['deep_sea_floor', 'abyssopelagic'], 'cathemeral', { min: 1, max: 2 }, { slow: 0.3, normal: 0.8, fast: 1.5 }, 3, '심해 바닥을 활강하며 갑각류를 먹음. 넓은 지느러미로 움직임.'),
+  sp(184, '투명머리', 'Macropinna microstoma', 'deepsea', 12, 0.03, 18, 0.05, 0.00008, 2.8, 'TL', 'VERIFIED', 'MBARI', true, false, ['bioluminescent', 'planktivore', 'vertical_migration'], 300, 1000, 4, 500, 50,
+    ['mesopelagic'], 'cathemeral', { min: 1, max: 1 }, { slow: 0.2, normal: 0.5, fast: 1.0 }, 2, '투명한 머리에 위를 보는 관상 눈. 심해와 중층 사이를 이동.'),
   sp(185, '심해새우어', 'Plesionika ensis_fish', 'deepsea', 12, 0.03, 18, 0.06, 0.00008, 2.8, 'TL', 'GAME_ESTIMATE', 'Estimated', true, false, ['schooling', 'benthic_rest'], 200, 2000, 1, 50, 8),
   sp(186, '괴물고기', 'Anoplogaster cornuta', 'deepsea', 15, 0.2, 20, 0.4, 0.00006, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'prey_chase'], 500, 2500, 3, 300, 30),
   sp(187, '심해오징어어', 'Taningia danae_fish', 'deepsea', 40, 0.5, 60, 1.2, 0.00002, 2.9, 'TL', 'GAME_ESTIMATE', 'Estimated', true, false, ['solitary', 'vertical_migration'], 500, 3000, 4, 400, 40),
