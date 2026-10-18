@@ -5,6 +5,7 @@ import { HARPOONS, TANKS, SUITS, SHIP_UPGRADES } from './data/equipment';
 import { ISLANDS, COMPANIONS, BOSSES, FOSSILS, WORLD_CONFIG } from './data/world';
 import { runAllTests, type TestResult } from './tests/gameEngine.test';
 import { runIntegrationTests, type IntegrationTestResult } from './tests/integration.test';
+import { verifySessionBCompletion, type CompletionResult } from './tests/sessionBCompletion.test';
 import { inputSystem, type InputAction } from './systems/InputSystem';
 import { SaveManager, type SaveSlot } from './systems/SaveManager';
 
@@ -16,6 +17,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [integrationResults, setIntegrationResults] = useState<IntegrationTestResult[]>([]);
+  const [completionResults, setCompletionResults] = useState<CompletionResult[]>([]);
   const [logs, setLogs] = useState<string[]>([]);
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
   const [saveSlots, setSaveSlots] = useState<SaveSlot[]>(SaveManager.getSaveSlots());
@@ -69,8 +71,11 @@ function App() {
     setTestResults(results);
     const integration = runIntegrationTests();
     setIntegrationResults(integration);
+    const completion = verifySessionBCompletion();
+    setCompletionResults(completion);
     addLog(`테스트: ${results.filter(r => r.passed).length}/${results.length} 통과`);
     addLog(`통합: ${integration.filter(r => r.passed).length}/${integration.length} 통과`);
+    addLog(`완료: ${completion.filter(r => r.passed).length}/${completion.length} 카테고리 통과`);
   }, [addLog]);
 
   const handleSave = useCallback((slotId: number) => {
@@ -186,7 +191,7 @@ function App() {
             {activeTab === 'companions' && <CompanionsPanel state={state} onAction={handleAction} />}
             {activeTab === 'fossils' && <FossilsPanel state={state} onAction={handleAction} />}
             {activeTab === 'saves' && <SavesPanel slots={saveSlots} onSave={handleSave} onLoad={handleLoad} />}
-            {activeTab === 'tests' && <TestsPanel results={testResults} integrationResults={integrationResults} onRun={handleTest} />}
+            {activeTab === 'tests' && <TestsPanel results={testResults} integrationResults={integrationResults} completionResults={completionResults} onRun={handleTest} />}
           </div>
 
           {/* Sidebar */}
@@ -767,7 +772,7 @@ function SavesPanel({ slots, onSave, onLoad }: { slots: SaveSlot[]; onSave: (id:
   );
 }
 
-function TestsPanel({ results, integrationResults, onRun }: { results: TestResult[]; integrationResults: IntegrationTestResult[]; onRun: () => void }) {
+function TestsPanel({ results, integrationResults, completionResults, onRun }: { results: TestResult[]; integrationResults: IntegrationTestResult[]; completionResults: CompletionResult[]; onRun: () => void }) {
   const passed = results.filter(r => r.passed).length;
   const total = results.length;
   const intPassed = integrationResults.filter(r => r.passed).length;
@@ -840,6 +845,30 @@ function TestsPanel({ results, integrationResults, onRun }: { results: TestResul
                       <span className="font-light text-white/90">{r.name}</span>
                     </div>
                     <p className="text-xs text-white/60 mt-2 ml-11">{r.message}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Session B Completion Verification */}
+          {completionResults.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-xl font-light text-cyan-300 mb-4">세션 B 완료 검증</h3>
+              <div className="space-y-4">
+                {completionResults.map((result, i) => (
+                  <div key={i} className={`rounded-xl p-5 border ${
+                    result.passed ? 'bg-emerald-500/10 border-emerald-400/30' : 'bg-red-500/10 border-red-400/30'
+                  }`}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-2xl">{result.passed ? '✅' : '❌'}</span>
+                      <span className="font-light text-white/90">{result.category}</span>
+                    </div>
+                    <div className="ml-11 space-y-1">
+                      {result.details.map((detail, j) => (
+                        <p key={j} className="text-xs text-white/60">{detail}</p>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
