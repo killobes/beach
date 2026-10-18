@@ -13,6 +13,7 @@ import { validateState, sanitizeSnapshot, detectImpossibleState, ActionRateLimit
 import { TravelingMerchantSystem, DEFAULT_MERCHANT_CONFIG, type MerchantState } from '../systems/TravelingMerchant';
 import { IntroSystem } from '../systems/IntroSystem';
 import { HomeBaseSystem, type HouseState } from '../systems/HomeBaseSystem';
+import { validateAndAdjustSpeciesDepths } from '../data/SpeciesDepthValidator';
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -218,6 +219,14 @@ export function createGame(config: GameConfig) {
   const seed = config.seed;
   const rng = new SeededRNG(seed);
   const subscribers: Array<(state: GameState) => void> = [];
+
+  // ═══════════════════════════════════════════
+  // 수심 검증 및 조정 (게임 시작 시 1회만 실행)
+  // ═══════════════════════════════════════════
+  const depthValidationResult = validateAndAdjustSpeciesDepths();
+  if (depthValidationResult.adjustedSpecies > 0) {
+    console.log(`[GameEngine] ${depthValidationResult.adjustedSpecies}종 어종의 수심이 새로운 기준에 맞게 조정되었습니다.`);
+  }
 
   // Initialize subsystems
   const behaviorSystem = new CreatureBehaviorSystem();

@@ -73,37 +73,77 @@ export interface WorldConfig {
 }
 
 export const WORLD_CONFIG: WorldConfig = {
-  widthM: 4800,
-  heightM: 3200,
+  widthM: 10000,  // 10km
+  heightM: 8000,  // 8km
   seaLevel: 0,
-  startShipX: 755,
-  startShipZ: 1780,
+  startShipX: 1500,  // 열대 산호해 시작
+  startShipZ: 1500,
   regions: {
-    tropical: { xMin: 0, xMax: 1600, zMin: 0, zMax: 1600 },
-    mangrove: { xMin: 1600, xMax: 3200, zMin: 0, zMax: 1600 },
-    glacier: { xMin: 3200, xMax: 4800, zMin: 0, zMax: 1600 },
-    ocean: { xMin: 0, xMax: 2400, zMin: 1600, zMax: 3200 },
-    volcanic: { xMin: 2400, xMax: 4800, zMin: 1600, zMax: 2400 },
-    deepsea: { xMin: 2400, xMax: 4800, zMin: 2400, zMax: 3200 },
+    tropical: { xMin: 0, xMax: 3500, zMin: 0, zMax: 3000 },      // 열대 산호해 (남서, 0~35m)
+    mangrove: { xMin: 3500, xMax: 6500, zMin: 0, zMax: 3000 },   // 탁한 하구해 (남중간, 2~30m)
+    ocean: { xMin: 6500, xMax: 10000, zMin: 0, zMax: 3000 },     // 대양 난류해 (남동, 10~120m)
+    glacier: { xMin: 0, xMax: 3500, zMin: 3000, zMax: 8000 },    // 한랭 대륙붕 (북서, 20~160m)
+    volcanic: { xMin: 3500, xMax: 6500, zMin: 3000, zMax: 8000 },// 온대 해초숲 (북중간, 5~60m)
+    deepsea: { xMin: 6500, xMax: 10000, zMin: 3000, zMax: 8000 },// 심해 협곡 (북동, 60~300m)
   }
 };
 
 // ═══════════════════════════════════════════
-// 12개 섬 (V3 계약)
+// 수심 시스템 (새로 추가)
+// ═══════════════════════════════════════════
+export const DEPTH_CONFIG = {
+  maxDepth: 300,  // 최대 수심 300m
+  zones: {
+    shallow: { min: 0, max: 30, name: '얕은 바다' },
+    medium: { min: 30, max: 100, name: '중층' },
+    deep: { min: 100, max: 200, name: '심층' },
+    abyss: { min: 200, max: 300, name: '심해' },
+  },
+  regionDepths: {
+    tropical: { min: 0, max: 35 },
+    mangrove: { min: 2, max: 30 },
+    ocean: { min: 10, max: 120 },
+    glacier: { min: 20, max: 160 },
+    volcanic: { min: 5, max: 60 },
+    deepsea: { min: 60, max: 300 },
+  },
+};
+
+// 잠수 장비 등급별 접근 가능 수심
+export const DIVING_EQUIPMENT_TIERS = {
+  basic: { maxDepth: 30, oxygenTime: 600, name: '기본 장비' },      // 10분
+  advanced: { maxDepth: 100, oxygenTime: 900, name: '고급 장비' },   // 15분
+  special: { maxDepth: 200, oxygenTime: 1500, name: '특수 장비' },   // 25분
+  legendary: { maxDepth: 300, oxygenTime: 2400, name: '전설 장비' }, // 40분
+};
+
+// ═══════════════════════════════════════════
+// 12개 섬 (새로운 월드 크기에 맞게 재배치)
 // ═══════════════════════════════════════════
 export const ISLANDS: IslandData[] = [
-  { id: 1, name: '산호항', region: 'tropical', x: 755, y: 1780, hasPort: true, hasShop: true, hasDock: true, description: '모험의 시작점. 따뜻한 산호초가 둘러싼 작은 항구.' },
-  { id: 2, name: '야자섬', region: 'tropical', x: 400, y: 400, hasPort: false, hasShop: false, hasDock: true, description: '야자나무가 무성한 열대 낙원.' },
-  { id: 3, name: '돌고래만', region: 'tropical', x: 1200, y: 800, hasPort: false, hasShop: false, hasDock: true, description: '돌고래 떼가 자주 출몰하는 아름다운 만.' },
-  { id: 4, name: '맹그로브숲', region: 'mangrove', x: 2000, y: 600, hasPort: true, hasShop: true, hasDock: true, description: '울창한 맹그로브 숲이 펼쳐진 지역.' },
-  { id: 5, name: '늪지대', region: 'mangrove', x: 2600, y: 400, hasPort: false, hasShop: false, hasDock: true, description: '신비로운 늪지대. 희귀 생물이 서식한다.' },
-  { id: 6, name: '어부의 마을', region: 'mangrove', x: 2800, y: 1200, hasPort: true, hasShop: true, hasDock: true, description: '전통 어업 마을. 지역 특산품을 거래한다.' },
-  { id: 7, name: '얼음항', region: 'glacier', x: 3600, y: 600, hasPort: true, hasShop: true, hasDock: true, description: '빙하 옆에 자리한 차가운 항구.' },
-  { id: 8, name: '펭귄섬', region: 'glacier', x: 4200, y: 400, hasPort: false, hasShop: false, hasDock: true, description: '수많은 펭귄이 서식하는 얼음 섬.' },
-  { id: 9, name: '대양항', region: 'ocean', x: 800, y: 2200, hasPort: true, hasShop: true, hasDock: true, description: '넓은 대양을 마주한 큰 항구.' },
-  { id: 10, name: '화산항', region: 'volcanic', x: 3200, y: 1800, hasPort: true, hasShop: true, hasDock: true, description: '활화산 근처의 뜨거운 항구.' },
-  { id: 11, name: '열수구섬', region: 'volcanic', x: 4000, y: 2000, hasPort: false, hasShop: false, hasDock: true, description: '해저 열수구가 분출하는 섬.' },
-  { id: 12, name: '심해기지', region: 'deepsea', x: 3600, y: 2800, hasPort: true, hasShop: true, hasDock: true, description: '심해 탐험을 위한 특수 기지.' },
+  // 열대 산호해 (남서, 0~35m)
+  { id: 1, name: '산호항', region: 'tropical', x: 1500, y: 1500, hasPort: true, hasShop: true, hasDock: true, description: '모험의 시작점. 따뜻한 산호초가 둘러싼 작은 항구.' },
+  { id: 2, name: '야자섬', region: 'tropical', x: 800, y: 800, hasPort: false, hasShop: false, hasDock: true, description: '야자나무가 무성한 열대 낙원.' },
+  { id: 3, name: '돌고래만', region: 'tropical', x: 2500, y: 2200, hasPort: false, hasShop: false, hasDock: true, description: '돌고래 떼가 자주 출몰하는 아름다운 만.' },
+  
+  // 탁한 하구해 (남중간, 2~30m)
+  { id: 4, name: '맹그로브숲', region: 'mangrove', x: 4500, y: 1000, hasPort: true, hasShop: true, hasDock: true, description: '울창한 맹그로브 숲이 펼쳐진 지역.' },
+  { id: 5, name: '늪지대', region: 'mangrove', x: 5500, y: 2000, hasPort: false, hasShop: false, hasDock: true, description: '신비로운 늪지대. 희귀 생물이 서식한다.' },
+  { id: 6, name: '어부의 마을', region: 'mangrove', x: 5000, y: 2500, hasPort: true, hasShop: true, hasDock: true, description: '전통 어업 마을. 지역 특산품을 거래한다.' },
+  
+  // 대양 난류해 (남동, 10~120m)
+  { id: 9, name: '대양항', region: 'ocean', x: 8000, y: 1500, hasPort: true, hasShop: true, hasDock: true, description: '넓은 대양을 마주한 큰 항구.' },
+  
+  // 한랭 대륙붕 (북서, 20~160m)
+  { id: 7, name: '얼음항', region: 'glacier', x: 1500, y: 5500, hasPort: true, hasShop: true, hasDock: true, description: '빙하 옆에 자리한 차가운 항구.' },
+  { id: 8, name: '펭귄섬', region: 'glacier', x: 2500, y: 6500, hasPort: false, hasShop: false, hasDock: true, description: '수많은 펭귄이 서식하는 얼음 섬.' },
+  
+  // 온대 해초숲 (북중간, 5~60m)
+  { id: 10, name: '화산항', region: 'volcanic', x: 5000, y: 5000, hasPort: true, hasShop: true, hasDock: true, description: '활화산 근처의 뜨거운 항구.' },
+  { id: 11, name: '열수구섬', region: 'volcanic', x: 4500, y: 6500, hasPort: false, hasShop: false, hasDock: true, description: '해저 열수구가 분출하는 섬.' },
+  
+  // 심해 협곡 (북동, 60~300m)
+  { id: 12, name: '심해기지', region: 'deepsea', x: 8500, y: 6000, hasPort: true, hasShop: true, hasDock: true, description: '심해 탐험을 위한 특수 기지.' },
 ];
 
 // ═══════════════════════════════════════════
