@@ -4,6 +4,7 @@
 import { createGame, type GameState } from '../core/GameEngine';
 import { SPECIES_BY_ID, validateSpeciesDatabase, SPECIES_DATA } from '../data/species';
 import { WORLD_CONFIG, ISLANDS, DIVE_SITES } from '../data/world';
+import { CREATURE_VISUALS, getVisualData } from '../data/CreatureVisuals';
 
 export interface IntegrationTestResult {
   name: string;
@@ -27,6 +28,7 @@ export function runIntegrationTests(): IntegrationTestResult[] {
   results.push(test11_IslandCount());
   results.push(test12_DiveSiteCount());
   results.push(test13_SpeciesAllFish());
+  results.push(test14_CreatureVisuals());
 
   return results;
 }
@@ -298,5 +300,40 @@ function test13_SpeciesAllFish(): IntegrationTestResult {
     return { name: '13. 어류 200종', passed: true, message: 'All 200 species are fish' };
   } catch (e) {
     return { name: '13. 어류 200종', passed: false, message: `Failed: ${e}` };
+  }
+}
+
+function test14_CreatureVisuals(): IntegrationTestResult {
+  try {
+    // 모든 200종에 대해 시각 데이터가 있는지 확인
+    const missingVisuals: number[] = [];
+    
+    for (let i = 1; i <= 200; i++) {
+      const visual = getVisualData(i);
+      if (!visual || visual.speciesId !== i) {
+        missingVisuals.push(i);
+      }
+    }
+    
+    if (missingVisuals.length > 0) {
+      return { 
+        name: '14. 3D 시각 데이터', 
+        passed: false, 
+        message: `Missing visuals for species: ${missingVisuals.slice(0, 10).join(', ')}${missingVisuals.length > 10 ? '...' : ''}` 
+      };
+    }
+    
+    // CREATURE_VISUALS 배열이 200개인지 확인
+    if (CREATURE_VISUALS.length !== 200) {
+      return { 
+        name: '14. 3D 시각 데이터', 
+        passed: false, 
+        message: `Expected 200 visual entries, got ${CREATURE_VISUALS.length}` 
+      };
+    }
+    
+    return { name: '14. 3D 시각 데이터', passed: true, message: 'All 200 species have visual data' };
+  } catch (e) {
+    return { name: '14. 3D 시각 데이터', passed: false, message: `Failed: ${e}` };
   }
 }
