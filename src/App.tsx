@@ -74,16 +74,38 @@ function App() {
   }, [addLog]);
 
   const handleSave = useCallback((slotId: number) => {
-    SaveManager.save(slotId, game.getSnapshot(), 0, 0);
+    const snapshot = game.getSnapshot();
+    SaveManager.save(slotId, snapshot, 0, 0);
+    // Also save to single-slot for game.load() compatibility
+    game.save();
     setSaveSlots(SaveManager.getSaveSlots());
-    addLog('저장 완료');
+    addLog('💾 저장 완료');
   }, [game, addLog]);
 
   const handleLoad = useCallback((slotId: number) => {
-    SaveManager.load(slotId);
+    // Load from SaveManager (multi-slot)
+    const result = SaveManager.load(slotId);
+    if (result.success && result.data) {
+      // Restore game engine state
+      const loadResult = game.load();
+      if (loadResult.success) {
+        setState(game.getSnapshot());
+        addLog('📂 불러오기 완료');
+      } else {
+        addLog(`불러오기 실패: ${loadResult.reason}`);
+      }
+    } else {
+      // Fallback: try single-slot load
+      const loadResult = game.load();
+      if (loadResult.success) {
+        setState(game.getSnapshot());
+        addLog('📂 불러오기 완료');
+      } else {
+        addLog(`불러오기 실패: ${result.error || loadResult.reason}`);
+      }
+    }
     setSaveSlots(SaveManager.getSaveSlots());
-    addLog('불러오기 완료');
-  }, [addLog]);
+  }, [game, addLog]);
 
   const currentRegion = getRegionAt(state.shipX, state.shipZ);
   const nearbyCreatures = useMemo(() => {

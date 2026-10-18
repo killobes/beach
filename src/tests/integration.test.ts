@@ -2,8 +2,8 @@
 // 세션 A의 3D 렌더링과 세션 B의 게임 엔진 통합 검증
 
 import { createGame, type GameState } from '../core/GameEngine';
-import { SPECIES_BY_ID, validateSpeciesDatabase } from '../data/species';
-import { WORLD_CONFIG } from '../data/world';
+import { SPECIES_BY_ID, validateSpeciesDatabase, SPECIES_DATA } from '../data/species';
+import { WORLD_CONFIG, ISLANDS, DIVE_SITES } from '../data/world';
 
 export interface IntegrationTestResult {
   name: string;
@@ -24,6 +24,9 @@ export function runIntegrationTests(): IntegrationTestResult[] {
   results.push(test8_EdgeCaseHandling());
   results.push(test9_ConcurrentActions());
   results.push(test10_MockRendererSync());
+  results.push(test11_IslandCount());
+  results.push(test12_DiveSiteCount());
+  results.push(test13_SpeciesAllFish());
 
   return results;
 }
@@ -237,5 +240,63 @@ function test10_MockRendererSync(): IntegrationTestResult {
     return { name: '10. 렌더러 동기화', passed: true, message: 'Renderer synchronization verified' };
   } catch (e) {
     return { name: '10. 렌더러 동기화', passed: false, message: `Failed: ${e}` };
+  }
+}
+
+function test11_IslandCount(): IntegrationTestResult {
+  try {
+    if (ISLANDS.length !== 12) {
+      return { name: '11. 섬 개수', passed: false, message: `Expected 12 islands, got ${ISLANDS.length}` };
+    }
+    
+    // Check for duplicates
+    const ids = new Set(ISLANDS.map(i => i.id));
+    if (ids.size !== 12) {
+      return { name: '11. 섬 개수', passed: false, message: 'Duplicate island IDs found' };
+    }
+    
+    return { name: '11. 섬 개수', passed: true, message: '12 islands verified' };
+  } catch (e) {
+    return { name: '11. 섬 개수', passed: false, message: `Failed: ${e}` };
+  }
+}
+
+function test12_DiveSiteCount(): IntegrationTestResult {
+  try {
+    if (DIVE_SITES.length !== 24) {
+      return { name: '12. 탐사지 개수', passed: false, message: `Expected 24 dive sites, got ${DIVE_SITES.length}` };
+    }
+    
+    // Check for duplicates
+    const ids = new Set(DIVE_SITES.map(d => d.id));
+    if (ids.size !== 24) {
+      return { name: '12. 탐사지 개수', passed: false, message: 'Duplicate dive site IDs found' };
+    }
+    
+    return { name: '12. 탐사지 개수', passed: true, message: '24 dive sites verified' };
+  } catch (e) {
+    return { name: '12. 탐사지 개수', passed: false, message: `Failed: ${e}` };
+  }
+}
+
+function test13_SpeciesAllFish(): IntegrationTestResult {
+  try {
+    const validation = validateSpeciesDatabase();
+    
+    if (validation.nonFishSpecies.length > 0) {
+      return { 
+        name: '13. 어류 200종', 
+        passed: false, 
+        message: `Non-fish species detected: IDs ${validation.nonFishSpecies.join(', ')}` 
+      };
+    }
+    
+    if (SPECIES_DATA.length !== 200) {
+      return { name: '13. 어류 200종', passed: false, message: `Expected 200 species, got ${SPECIES_DATA.length}` };
+    }
+    
+    return { name: '13. 어류 200종', passed: true, message: 'All 200 species are fish' };
+  } catch (e) {
+    return { name: '13. 어류 200종', passed: false, message: `Failed: ${e}` };
   }
 }

@@ -989,8 +989,10 @@ export function createGame(config: GameConfig) {
       if (!raw) return { success: false, reason: 'No save data' };
 
       const saveData = JSON.parse(raw);
+      
+      // Version check
       if (saveData.version !== state.version) {
-        return { success: false, reason: 'Version mismatch' };
+        return { success: false, reason: `Version mismatch: save=${saveData.version}, current=${state.version}` };
       }
 
       // Validate loaded state
@@ -998,17 +1000,29 @@ export function createGame(config: GameConfig) {
       const validation = validateState(loadedState);
       if (!validation.valid) {
         console.error('Loaded state validation failed:', validation.errors);
-        return { success: false, reason: 'Corrupted save data' };
+        return { success: false, reason: `Corrupted save data: ${validation.errors.join(', ')}` };
       }
 
+      // Restore game state
       state = loadedState;
-      rng.setState(saveData.rngState);
-      uidCounter = saveData.uidCounter || 0;
+      
+      // Restore RNG state
+      if (typeof saveData.rngState === 'number') {
+        rng.setState(saveData.rngState);
+      }
+      
+      // Restore UID counter
+      if (typeof saveData.uidCounter === 'number') {
+        uidCounter = saveData.uidCounter;
+      }
+
+      // Notify subscribers of state change
+      notifySubscribers();
 
       return { success: true };
     } catch (e) {
       console.error('Load failed:', e);
-      return { success: false, reason: 'Load failed' };
+      return { success: false, reason: `Load failed: ${e}` };
     }
   }
 
