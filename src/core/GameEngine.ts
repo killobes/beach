@@ -5,6 +5,10 @@
 import { SPECIES_DATA, SPECIES_BY_ID, type SpeciesData, type Region } from '../data/species';
 import { HARPOONS, TANKS, SUITS, SHIP_UPGRADES, type HarpoonData, type TankData, type SuitData } from '../data/equipment';
 import { WORLD_CONFIG, ISLANDS, COMPANIONS, BOSSES, FOSSILS, WEATHER_EFFECTS, type WeatherType, type Season, type CompanionData } from '../data/world';
+import { CreatureBehaviorSystem, type CreatureState } from '../systems/CreatureBehavior';
+import { SpawnSystem, DEFAULT_SPAWN_CONFIG } from '../systems/SpawnSystem';
+import { EconomySystem, DEFAULT_ECONOMY_CONFIG } from '../systems/EconomySystem';
+import { WeatherSystem } from '../systems/WeatherSystem';
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -208,6 +212,12 @@ export function createGame(config: GameConfig) {
   const rng = new SeededRNG(seed);
   const subscribers: Array<(state: GameState) => void> = [];
 
+  // Initialize subsystems
+  const behaviorSystem = new CreatureBehaviorSystem();
+  const spawnSystem = new SpawnSystem(DEFAULT_SPAWN_CONFIG);
+  const economySystem = new EconomySystem(DEFAULT_ECONOMY_CONFIG);
+  const weatherSystem = new WeatherSystem();
+
   // Initialize state
   let state: GameState = createInitialState(seed);
 
@@ -309,12 +319,10 @@ export function createGame(config: GameConfig) {
       }
     }
 
-    // Weather timer
-    state.weatherTimer -= dtSec;
-    if (state.weatherTimer <= 0) {
-      updateWeather();
-      state.weatherTimer = rng.nextRange(1800, 7200); // 30-120 min game time
-    }
+    // Weather system update
+    weatherSystem.update(dtSec, state.season, () => rng.next());
+    const weatherState = weatherSystem.getState();
+    state.weather = weatherState.current;
 
     // Air consumption underwater
     if (state.inWater) {
@@ -502,12 +510,12 @@ export function createGame(config: GameConfig) {
     // Update codex
     updateCodexObserve(specimen);
 
-    // Observation reward
-    let reward = species.observationPoints;
+    // Observation reward using economy system
+    let companionBonus = 0;
     if (state.companions.includes('mia')) {
-      reward = Math.round(reward * 1.5);
+      companionBonus = 0.5;
     }
-
+    const reward = economySystem.calculateObservationReward(specimen.speciesId, companionBonus);
     state.shells += reward;
 
     return { success: true, data: { species: species.name, reward } };
@@ -522,21 +530,14 @@ export function createGame(config: GameConfig) {
     );
     if (!nearPort) return { success: false, reason: 'Must be near a port' };
 
-    let totalEarned = 0;
-    let sellBonus = 1.0;
-    if (state.companions.includes('leo')) sellBonus += 0.2;
+    let sellBonus = 0;
+    if (state.companions.includes('leo')) sellBonus = DEFAULT_ECONOMY_CONFIG.companionSellBonus;
 
-    for (const specimen of state.cargo) {
-      const species = SPECIES_BY_ID.get(specimen.speciesId)!;
-      const sizeBonus = specimen.lengthCm / species.gameBaseLengthCm;
-      const price = Math.round(species.sellBasePrice * sizeBonus * sellBonus);
-      totalEarned += price;
-    }
-
-    state.shells += totalEarned;
+    const saleResult = economySystem.sellAll(state.cargo, sellBonus);
+    state.shells += saleResult.totalEarned;
     state.cargo = [];
 
-    return { success: true, data: { totalEarned } };
+    return { success: true, data: { totalEarned: saleResult.totalEarned, itemsSold: saleResult.itemsSold } };
   }
 
   function handleBuyItem(itemType: string, itemId: number): GameActionResult {
@@ -702,80 +703,88 @@ export function createGame(config: GameConfig) {
 
   // ─── Helper Functions ───
 
-  function updateWeather(): void {
-    const weathers: WeatherType[] = ['clear', 'cloudy', 'rain', 'storm', 'fog', 'snow'];
-    const seasonWeights: Record<Season, Record<WeatherType, number>> = {
-      spring: { clear: 4, cloudy: 3, rain: 2, storm: 0.5, fog: 1, snow: 0 },
-      summer: { clear: 5, cloudy: 2, rain: 2, storm: 1, fog: 0.5, snow: 0 },
-      autumn: { clear: 2, cloudy: 3, rain: 3, storm: 1.5, fog: 2, snow: 0 },
-      winter: { clear: 1, cloudy: 2, rain: 1, storm: 1, fog: 2, snow: 4 },
-    };
-
-    const weights = seasonWeights[state.season];
-    const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
-    let roll = rng.next() * totalWeight;
-
-    for (const w of weathers) {
-      roll -= weights[w];
-      if (roll <= 0) {
-        state.weather = w;
-        return;
-      }
-    }
-    state.weather = 'clear';
-  }
+  // Weather is now handled by WeatherSystem
 
   function spawnCreatures(): void {
-    const maxActive = 50;
-    if (state.activeSpecimens.length >= maxActive) return;
+    const spawnConfig = spawnSystem.getConfig();
+    if (state.activeSpecimens.length >= spawnConfig.maxActive) return;
 
-    const toSpawn = Math.min(5, maxActive - state.activeSpecimens.length);
-    const weatherMod = WEATHER_EFFECTS[state.weather];
+    const toSpawn = Math.min(spawnConfig.spawnBatchSize, spawnConfig.maxActive - state.activeSpecimens.length);
+
+    // Get region weights based on player position, weather, season, time
+    const regionWeights = spawnSystem.getRegionSpawnWeights(
+      state.shipX, state.shipZ, state.weather, state.season, state.hour
+    );
 
     for (let i = 0; i < toSpawn; i++) {
-      // Pick random region based on player position or random
-      const regions: Region[] = ['tropical', 'glacier', 'volcanic', 'mangrove', 'ocean', 'deepsea'];
-      const region = regions[rng.nextInt(0, 5)];
-      const regionSpecies = SPECIES_DATA.filter(s => s.region === region);
+      // Select region using spawn system
+      const region = spawnSystem.selectRegion(regionWeights, () => rng.next());
 
-      if (regionSpecies.length === 0) continue;
+      // Select species using spawn system
+      const selectedSpecies = spawnSystem.selectSpecies(region, () => rng.next());
 
-      // Weighted selection by rarity (rarer = less likely)
-      const totalWeight = regionSpecies.reduce((sum, s) => sum + (1 / s.rarity) * weatherMod.spawnMod[region], 0);
-      let roll = rng.next() * totalWeight;
-      let selectedSpecies = regionSpecies[0];
+      // Generate position and depth
+      const pos = spawnSystem.generatePosition(region, () => rng.next());
+      const depth = spawnSystem.generateDepth(selectedSpecies, () => rng.next());
 
-      for (const s of regionSpecies) {
-        roll -= (1 / s.rarity) * weatherMod.spawnMod[region];
-        if (roll <= 0) {
-          selectedSpecies = s;
-          break;
-        }
-      }
-
+      // Generate specimen using existing factory
       const specimen = generateSpecimen(selectedSpecies, rng, region, state.gameTimeSec);
+      // Override position with spawn system values
+      specimen.x = Math.round(pos.x * 10) / 10;
+      specimen.z = Math.round(pos.z * 10) / 10;
+      specimen.depthM = Math.round(Math.abs(depth));
+
       state.activeSpecimens.push(specimen);
     }
   }
 
   function updateCreatureBehaviors(dtSec: number): void {
+    // Prepare diver position for behavior system
+    const diverPos = state.inWater ? {
+      x: state.diverX,
+      y: state.diverY,
+      z: state.diverZ,
+    } : null;
+
     for (const spec of state.activeSpecimens) {
       const species = SPECIES_BY_ID.get(spec.speciesId);
       if (!species) continue;
 
-      // Simple behavior: drift slightly
-      const driftSpeed = 0.5;
-      const driftAngle = rng.next() * Math.PI * 2;
-      spec.x += Math.sin(driftAngle) * driftSpeed * dtSec;
-      spec.z += Math.cos(driftAngle) * driftSpeed * dtSec;
+      // Use CreatureBehaviorSystem for complex behaviors
+      const creatureState: CreatureState = {
+        uid: spec.uid,
+        speciesId: spec.speciesId,
+        x: spec.x,
+        y: -spec.depthM,
+        z: spec.z,
+        heading: 0,
+        speed: 1,
+        behaviorState: spec.behaviorState as any,
+        targetX: spec.x,
+        targetZ: spec.z,
+        targetY: -spec.depthM,
+        alertLevel: 0,
+        hunger: 0.3,
+        schoolId: null,
+        age: state.gameTimeSec - spec.spawnTime,
+        maxAge: 600, // 10 minutes
+      };
+
+      // Update behavior using the behavior system
+      behaviorSystem.updateBehavior(creatureState, species, dtSec, diverPos, [], state.hour);
+
+      // Write back to specimen
+      spec.x = creatureState.x;
+      spec.z = creatureState.z;
+      spec.behaviorState = creatureState.behaviorState;
 
       // Keep in world bounds
       const bounds = WORLD_CONFIG.regions[species.region];
       spec.x = Math.max(bounds.xMin, Math.min(bounds.xMax, spec.x));
       spec.z = Math.max(bounds.zMin, Math.min(bounds.zMax, spec.z));
 
-      // Despawn if too old (5 minutes game time)
-      if (state.gameTimeSec - spec.spawnTime > 300) {
+      // Despawn if too old
+      if (state.gameTimeSec - spec.spawnTime > 600) {
         spec.behaviorState = 'despawned';
       }
     }
