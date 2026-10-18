@@ -10,6 +10,7 @@ import { SpawnSystem, DEFAULT_SPAWN_CONFIG } from '../systems/SpawnSystem';
 import { EconomySystem, DEFAULT_ECONOMY_CONFIG } from '../systems/EconomySystem';
 import { WeatherSystem } from '../systems/WeatherSystem';
 import { validateState, sanitizeSnapshot, detectImpossibleState, ActionRateLimiter } from '../systems/ValidationSystem';
+import { TravelingMerchantSystem, DEFAULT_MERCHANT_CONFIG, type MerchantState } from '../systems/TravelingMerchant';
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -93,6 +94,9 @@ export interface GameState {
 
   // World creatures (active specimens)
   activeSpecimens: Specimen[];
+
+  // Traveling Merchant
+  merchant: MerchantState;
 
   // Stats
   totalDives: number;
@@ -218,6 +222,7 @@ export function createGame(config: GameConfig) {
   const spawnSystem = new SpawnSystem(DEFAULT_SPAWN_CONFIG);
   const economySystem = new EconomySystem(DEFAULT_ECONOMY_CONFIG);
   const weatherSystem = new WeatherSystem();
+  const merchantSystem = new TravelingMerchantSystem(DEFAULT_MERCHANT_CONFIG);
   const rateLimiter = new ActionRateLimiter(16); // 60fps max
 
   // Initialize state
@@ -266,6 +271,7 @@ export function createGame(config: GameConfig) {
       bossHp: 0,
 
       activeSpecimens: [],
+      merchant: merchantSystem.getState(),
       totalDives: 0,
       totalCatches: 0,
       uniqueSpeciesCaught: 0,
@@ -328,6 +334,7 @@ export function createGame(config: GameConfig) {
       case 'SUMMON_BOSS': return handleSummonBoss(action.bossId as string);
       case 'ATTACK_BOSS': return handleAttackBoss(action.damage as number);
       case 'RECRUIT_COMPANION': return handleRecruitCompanion(action.companionId as string);
+      case 'MERCHANT_BUY': return handleMerchantBuy(action.itemIndex as number);
       default:
         return { success: false, reason: `Unknown action: ${action.type}` };
     }
@@ -357,6 +364,10 @@ export function createGame(config: GameConfig) {
     weatherSystem.update(dtSec, state.season, () => rng.next());
     const weatherState = weatherSystem.getState();
     state.weather = weatherState.current;
+
+    // Traveling merchant update
+    merchantSystem.update(state.gameTimeSec, () => rng.next());
+    state.merchant = merchantSystem.getState();
 
     // Air consumption underwater
     if (state.inWater) {
@@ -733,6 +744,63 @@ export function createGame(config: GameConfig) {
 
     state.companions.push(companionId);
     return { success: true, data: { companion: companion.name } };
+  }
+
+  function handleMerchantBuy(itemIndex: number): GameActionResult {
+    if (!state.merchant.isActive) {
+      return { success: false, reason: 'Merchant not visiting' };
+    }
+
+    const item = state.merchant.inventory[itemIndex];
+    if (!item) {
+      return { success: false, reason: 'Item not found' };
+    }
+
+    if (item.stock <= 0) {
+      return { success: false, reason: 'Out of stock' };
+    }
+
+    if (state.shells < item.price) {
+      return { success: false, reason: 'Not enough shells' };
+    }
+
+    // Process purchase through merchant system
+    const result = merchantSystem.buyItem(itemIndex, state.shells);
+    if (!result.success) {
+      return { success: false, reason: result.reason };
+    }
+
+    // Update player state
+    state.shells = result.newShells!;
+
+    // Add item to player inventory based on type
+    switch (item.type) {
+      case 'harpoon':
+        if (!state.ownedHarpoons.includes(item.itemId)) {
+          state.ownedHarpoons.push(item.itemId);
+        }
+        break;
+      case 'tank':
+        if (!state.ownedTanks.includes(item.itemId)) {
+          state.ownedTanks.push(item.itemId);
+        }
+        break;
+      case 'suit':
+        if (!state.ownedSuits.includes(item.itemId)) {
+          state.ownedSuits.push(item.itemId);
+        }
+        break;
+      case 'material':
+      case 'rare':
+        // Materials and rare items are consumed immediately or stored
+        // For now, just deduct the price
+        break;
+    }
+
+    // Update merchant state in game state
+    state.merchant = merchantSystem.getState();
+
+    return { success: true, data: { item: item.name, price: item.price } };
   }
 
   // ─── Helper Functions ───
