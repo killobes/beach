@@ -9,6 +9,7 @@ import { CreatureBehaviorSystem, type CreatureState } from '../systems/CreatureB
 import { SpawnSystem, DEFAULT_SPAWN_CONFIG } from '../systems/SpawnSystem';
 import { EconomySystem, DEFAULT_ECONOMY_CONFIG } from '../systems/EconomySystem';
 import { WeatherSystem } from '../systems/WeatherSystem';
+import { validateState, sanitizeSnapshot, detectImpossibleState, ActionRateLimiter } from '../systems/ValidationSystem';
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -217,9 +218,11 @@ export function createGame(config: GameConfig) {
   const spawnSystem = new SpawnSystem(DEFAULT_SPAWN_CONFIG);
   const economySystem = new EconomySystem(DEFAULT_ECONOMY_CONFIG);
   const weatherSystem = new WeatherSystem();
+  const rateLimiter = new ActionRateLimiter(16); // 60fps max
 
   // Initialize state
   let state: GameState = createInitialState(seed);
+  let previousState: GameState | null = null;
 
   function createInitialState(s: number): GameState {
     return {
@@ -272,7 +275,38 @@ export function createGame(config: GameConfig) {
 
   // ─── Dispatch ───
   function dispatch(action: GameAction): GameActionResult {
+    // Rate limiting (except TICK which is called every frame)
+    if (action.type !== 'TICK' && !rateLimiter.canPerform(action.type)) {
+      return { success: false, reason: 'Action rate limited' };
+    }
+
+    // Store previous state for anti-cheat detection
+    previousState = JSON.parse(JSON.stringify(state));
+
     const result = processAction(action);
+
+    // Validate state after action
+    const validation = validateState(state);
+    if (!validation.valid) {
+      console.warn('State validation errors:', validation.errors);
+    }
+    if (validation.warnings.length > 0) {
+      console.warn('State validation warnings:', validation.warnings);
+    }
+
+    // Anti-cheat detection
+    if (previousState) {
+      const violations = detectImpossibleState(previousState, state);
+      if (violations.length > 0) {
+        console.error('Impossible state detected:', violations);
+        // Revert to previous state if critical violation
+        if (violations.some(v => v.includes('Impossible'))) {
+          state = previousState;
+          return { success: false, reason: 'Invalid state change detected' };
+        }
+      }
+    }
+
     notifySubscribers();
     return result;
   }
@@ -904,7 +938,8 @@ export function createGame(config: GameConfig) {
   // ─── Snapshot & Subscription ───
 
   function getSnapshot(): GameState {
-    return JSON.parse(JSON.stringify(state));
+    // Sanitize before returning to prevent data corruption
+    return sanitizeSnapshot(state);
   }
 
   function subscribe(callback: (state: GameState) => void): () => void {
@@ -926,15 +961,24 @@ export function createGame(config: GameConfig) {
 
   function save(): GameActionResult {
     try {
+      // Validate and sanitize before saving
+      const validation = validateState(state);
+      if (!validation.valid) {
+        console.warn('Saving with validation errors:', validation.errors);
+      }
+
+      const sanitizedState = sanitizeSnapshot(state);
       const saveData = {
         version: state.version,
-        state: state,
+        state: sanitizedState,
         rngState: rng.getState(),
         uidCounter,
+        timestamp: Date.now(),
       };
       localStorage.setItem('oceangaia_save', JSON.stringify(saveData));
       return { success: true };
     } catch (e) {
+      console.error('Save failed:', e);
       return { success: false, reason: 'Save failed' };
     }
   }
@@ -949,12 +993,21 @@ export function createGame(config: GameConfig) {
         return { success: false, reason: 'Version mismatch' };
       }
 
-      state = saveData.state;
+      // Validate loaded state
+      const loadedState = saveData.state as GameState;
+      const validation = validateState(loadedState);
+      if (!validation.valid) {
+        console.error('Loaded state validation failed:', validation.errors);
+        return { success: false, reason: 'Corrupted save data' };
+      }
+
+      state = loadedState;
       rng.setState(saveData.rngState);
       uidCounter = saveData.uidCounter || 0;
 
       return { success: true };
     } catch (e) {
+      console.error('Load failed:', e);
       return { success: false, reason: 'Load failed' };
     }
   }

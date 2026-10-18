@@ -4,6 +4,7 @@ import { SPECIES_BY_ID, SPECIES_DATA, type Region } from './data/species';
 import { HARPOONS, TANKS, SUITS, SHIP_UPGRADES } from './data/equipment';
 import { ISLANDS, COMPANIONS, BOSSES, FOSSILS, WORLD_CONFIG } from './data/world';
 import { runAllTests, type TestResult } from './tests/gameEngine.test';
+import { runIntegrationTests, type IntegrationTestResult } from './tests/integration.test';
 import { inputSystem, type InputAction } from './systems/InputSystem';
 import { SaveManager, type SaveSlot } from './systems/SaveManager';
 
@@ -14,6 +15,7 @@ function App() {
   const [state, setState] = useState<GameState>(game.getSnapshot());
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [integrationResults, setIntegrationResults] = useState<IntegrationTestResult[]>([]);
   const [logs, setLogs] = useState<string[]>([]);
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
   const [saveSlots, setSaveSlots] = useState<SaveSlot[]>(SaveManager.getSaveSlots());
@@ -65,7 +67,10 @@ function App() {
   const handleTest = useCallback(() => {
     const results = runAllTests();
     setTestResults(results);
+    const integration = runIntegrationTests();
+    setIntegrationResults(integration);
     addLog(`테스트: ${results.filter(r => r.passed).length}/${results.length} 통과`);
+    addLog(`통합: ${integration.filter(r => r.passed).length}/${integration.length} 통과`);
   }, [addLog]);
 
   const handleSave = useCallback((slotId: number) => {
@@ -159,7 +164,7 @@ function App() {
             {activeTab === 'companions' && <CompanionsPanel state={state} onAction={handleAction} />}
             {activeTab === 'fossils' && <FossilsPanel state={state} onAction={handleAction} />}
             {activeTab === 'saves' && <SavesPanel slots={saveSlots} onSave={handleSave} onLoad={handleLoad} />}
-            {activeTab === 'tests' && <TestsPanel results={testResults} onRun={handleTest} />}
+            {activeTab === 'tests' && <TestsPanel results={testResults} integrationResults={integrationResults} onRun={handleTest} />}
           </div>
 
           {/* Sidebar */}
@@ -740,9 +745,11 @@ function SavesPanel({ slots, onSave, onLoad }: { slots: SaveSlot[]; onSave: (id:
   );
 }
 
-function TestsPanel({ results, onRun }: { results: TestResult[]; onRun: () => void }) {
+function TestsPanel({ results, integrationResults, onRun }: { results: TestResult[]; integrationResults: IntegrationTestResult[]; onRun: () => void }) {
   const passed = results.filter(r => r.passed).length;
   const total = results.length;
+  const intPassed = integrationResults.filter(r => r.passed).length;
+  const intTotal = integrationResults.length;
 
   return (
     <div className="backdrop-blur-xl bg-white/5 rounded-2xl p-8 border border-white/10">
@@ -757,30 +764,65 @@ function TestsPanel({ results, onRun }: { results: TestResult[]; onRun: () => vo
         <p className="text-white/40 text-center py-16">위의 "테스트 실행" 버튼을 클릭하세요</p>
       ) : (
         <>
-          <div className="mb-8 flex items-center gap-6">
-            <div className={`text-5xl font-light ${passed === total ? 'text-emerald-300' : 'text-red-300'}`}>
-              {passed}/{total}
-            </div>
-            <div className="flex-1">
-              <div className="w-full bg-white/5 rounded-full h-2">
-                <div className={`h-2 rounded-full transition-all duration-500 ${passed === total ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : 'bg-gradient-to-r from-red-500 to-orange-500'}`}
-                  style={{ width: `${(passed / total) * 100}%` }} />
+          {/* Unit Tests */}
+          <div className="mb-8">
+            <h3 className="text-xl font-light text-cyan-300 mb-4">유닛 테스트</h3>
+            <div className="mb-6 flex items-center gap-6">
+              <div className={`text-5xl font-light ${passed === total ? 'text-emerald-300' : 'text-red-300'}`}>
+                {passed}/{total}
               </div>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {results.map((r, i) => (
-              <div key={i} className={`rounded-xl p-5 border ${
-                r.passed ? 'bg-emerald-500/10 border-emerald-400/30' : 'bg-red-500/10 border-red-400/30'
-              }`}>
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{r.passed ? '✅' : '❌'}</span>
-                  <span className="font-light text-white/90">{r.name}</span>
+              <div className="flex-1">
+                <div className="w-full bg-white/5 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all duration-500 ${passed === total ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : 'bg-gradient-to-r from-red-500 to-orange-500'}`}
+                    style={{ width: `${(passed / total) * 100}%` }} />
                 </div>
-                <p className="text-xs text-white/60 mt-2 ml-11">{r.message}</p>
               </div>
-            ))}
+            </div>
+            <div className="space-y-3">
+              {results.map((r, i) => (
+                <div key={i} className={`rounded-xl p-5 border ${
+                  r.passed ? 'bg-emerald-500/10 border-emerald-400/30' : 'bg-red-500/10 border-red-400/30'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{r.passed ? '✅' : '❌'}</span>
+                    <span className="font-light text-white/90">{r.name}</span>
+                  </div>
+                  <p className="text-xs text-white/60 mt-2 ml-11">{r.message}</p>
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Integration Tests */}
+          {integrationResults.length > 0 && (
+            <div>
+              <h3 className="text-xl font-light text-cyan-300 mb-4">통합 테스트 (세션 A ↔ B)</h3>
+              <div className="mb-6 flex items-center gap-6">
+                <div className={`text-5xl font-light ${intPassed === intTotal ? 'text-emerald-300' : 'text-red-300'}`}>
+                  {intPassed}/{intTotal}
+                </div>
+                <div className="flex-1">
+                  <div className="w-full bg-white/5 rounded-full h-2">
+                    <div className={`h-2 rounded-full transition-all duration-500 ${intPassed === intTotal ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : 'bg-gradient-to-r from-red-500 to-orange-500'}`}
+                      style={{ width: `${(intPassed / intTotal) * 100}%` }} />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {integrationResults.map((r, i) => (
+                  <div key={i} className={`rounded-xl p-5 border ${
+                    r.passed ? 'bg-emerald-500/10 border-emerald-400/30' : 'bg-red-500/10 border-red-400/30'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{r.passed ? '✅' : '❌'}</span>
+                      <span className="font-light text-white/90">{r.name}</span>
+                    </div>
+                    <p className="text-xs text-white/60 mt-2 ml-11">{r.message}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
