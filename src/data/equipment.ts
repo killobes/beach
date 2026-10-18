@@ -18,6 +18,7 @@ export interface TankData {
   name: string;
   airCapacity: number; // abstract units
   moveModifier: number; // 1.0 = normal, >1 = faster
+  maxDepth: number; // 최대 접근 가능 수심 (m)
   price: number;
   unlockCondition: string;
 }
@@ -28,6 +29,7 @@ export interface SuitData {
   envProtection: number; // 0-1, damage reduction
   visionBonus: number; // 0-1, visibility improvement
   moveModifier: number; // 1.0 = normal
+  maxDepth: number; // 최대 접근 가능 수심 (m)
   price: number;
   unlockCondition: string;
 }
@@ -38,6 +40,7 @@ export interface ShipUpgradeData {
   speed: number; // m/s
   cargoCapacity: number; // number of specimens
   explorationRange: number; // meters
+  maxDepth: number; // 최대 접근 가능 수심 (m)
   price: number;
   unlockCondition: string;
 }
@@ -70,27 +73,27 @@ export const HARPOONS: HarpoonData[] = [
 ];
 
 export const TANKS: TankData[] = [
-  { id: 1, name: '기본 산소통', airCapacity: 100, moveModifier: 1.0, price: 0, unlockCondition: '기본' },
-  { id: 2, name: '강화 산소통', airCapacity: 150, moveModifier: 0.95, price: 300, unlockCondition: '잠수 10회' },
-  { id: 3, name: '대용량 산소통', airCapacity: 250, moveModifier: 0.9, price: 800, unlockCondition: '잠수 30회' },
-  { id: 4, name: '경량 산소통', airCapacity: 120, moveModifier: 1.15, price: 1500, unlockCondition: '잠수 50회' },
-  { id: 5, name: '심해용 산소통', airCapacity: 300, moveModifier: 0.85, price: 3000, unlockCondition: '심해 탐험' },
-  { id: 6, name: '가이아 산소통', airCapacity: 500, moveModifier: 1.1, price: 10000, unlockCondition: '보스 1회 처치' },
+  { id: 1, name: '기본 산소통', airCapacity: 600, moveModifier: 1.0, maxDepth: 30, price: 0, unlockCondition: '기본' },
+  { id: 2, name: '고급 산소통', airCapacity: 900, moveModifier: 0.95, maxDepth: 100, price: 2000, unlockCondition: '잠수 10회' },
+  { id: 3, name: '특수 산소통', airCapacity: 1500, moveModifier: 0.9, maxDepth: 200, price: 8000, unlockCondition: '잠수 30회' },
+  { id: 4, name: '경량 특수 산소통', airCapacity: 1200, moveModifier: 1.1, maxDepth: 200, price: 6000, unlockCondition: '잠수 50회' },
+  { id: 5, name: '전설 산소통', airCapacity: 2400, moveModifier: 0.85, maxDepth: 300, price: 30000, unlockCondition: '심해 탐험' },
+  { id: 6, name: '가이아 산소통', airCapacity: 3600, moveModifier: 1.1, maxDepth: 300, price: 80000, unlockCondition: '보스 1회 처치' },
 ];
 
 export const SUITS: SuitData[] = [
-  { id: 1, name: '기본 잠수복', envProtection: 0.1, visionBonus: 0, moveModifier: 1.0, price: 0, unlockCondition: '기본' },
-  { id: 2, name: '보온 잠수복', envProtection: 0.3, visionBonus: 0, moveModifier: 0.95, price: 500, unlockCondition: '빙하 탐험' },
-  { id: 3, name: '내열 잠수복', envProtection: 0.4, visionBonus: 0.1, moveModifier: 0.9, price: 800, unlockCondition: '화산 탐험' },
-  { id: 4, name: '경량 잠수복', envProtection: 0.15, visionBonus: 0, moveModifier: 1.2, price: 1200, unlockCondition: '잠수 50회' },
-  { id: 5, name: '심해 잠수복', envProtection: 0.6, visionBonus: 0.3, moveModifier: 0.85, price: 4000, unlockCondition: '심해 탐험' },
-  { id: 6, name: '가이아 잠수복', envProtection: 0.8, visionBonus: 0.5, moveModifier: 1.1, price: 15000, unlockCondition: '보스 2회 처치' },
+  { id: 1, name: '기본 잠수복', envProtection: 0.1, visionBonus: 0, moveModifier: 1.0, maxDepth: 30, price: 0, unlockCondition: '기본' },
+  { id: 2, name: '고급 잠수복', envProtection: 0.3, visionBonus: 0.1, moveModifier: 0.95, maxDepth: 100, price: 2000, unlockCondition: '잠수 20회' },
+  { id: 3, name: '특수 잠수복', envProtection: 0.5, visionBonus: 0.2, moveModifier: 0.9, maxDepth: 200, price: 10000, unlockCondition: '잠수 50회' },
+  { id: 4, name: '보온 특수 잠수복', envProtection: 0.6, visionBonus: 0.2, moveModifier: 0.88, maxDepth: 200, price: 8000, unlockCondition: '빙하 탐험' },
+  { id: 5, name: '전설 잠수복', envProtection: 0.8, visionBonus: 0.4, moveModifier: 0.85, maxDepth: 300, price: 40000, unlockCondition: '심해 탐험' },
+  { id: 6, name: '가이아 잠수복', envProtection: 1.0, visionBonus: 0.5, moveModifier: 1.1, maxDepth: 300, price: 100000, unlockCondition: '보스 2회 처치' },
 ];
 
 export const SHIP_UPGRADES: ShipUpgradeData[] = [
-  { level: 1, name: '낡은 어선', speed: 3, cargoCapacity: 10, explorationRange: 500, price: 0, unlockCondition: '기본' },
-  { level: 2, name: '개량 어선', speed: 5, cargoCapacity: 20, explorationRange: 1000, price: 2000, unlockCondition: '조개 2000개' },
-  { level: 3, name: '탐사선', speed: 7, cargoCapacity: 35, explorationRange: 2000, price: 8000, unlockCondition: '포획 50종' },
-  { level: 4, name: '연구선', speed: 10, cargoCapacity: 50, explorationRange: 3500, price: 25000, unlockCondition: '포획 100종' },
-  { level: 5, name: '가이아호', speed: 15, cargoCapacity: 80, explorationRange: 5000, price: 80000, unlockCondition: '포획 180종' },
+  { level: 1, name: '낡은 어선', speed: 3, cargoCapacity: 10, explorationRange: 500, maxDepth: 30, price: 0, unlockCondition: '기본' },
+  { level: 2, name: '개량 어선', speed: 5, cargoCapacity: 20, explorationRange: 1000, maxDepth: 50, price: 2000, unlockCondition: '조개 2000개' },
+  { level: 3, name: '탐사선', speed: 7, cargoCapacity: 35, explorationRange: 2000, maxDepth: 100, price: 8000, unlockCondition: '포획 50종' },
+  { level: 4, name: '연구선', speed: 10, cargoCapacity: 50, explorationRange: 3500, maxDepth: 200, price: 25000, unlockCondition: '포획 100종' },
+  { level: 5, name: '가이아호', speed: 15, cargoCapacity: 80, explorationRange: 5000, maxDepth: 300, price: 80000, unlockCondition: '포획 180종' },
 ];

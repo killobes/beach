@@ -147,44 +147,44 @@ export const ISLANDS: IslandData[] = [
 ];
 
 // ═══════════════════════════════════════════
-// 24개 탐사지 (V3 계약)
+// 24개 탐사지 (새로운 수심 기준에 맞게 조정)
 // ═══════════════════════════════════════════
 export const DIVE_SITES: DiveSiteData[] = [
-  // Tropical (4 sites)
-  { id: 1, name: '산호초 탐사지', region: 'tropical', x: 500, z: 600, depthMinM: 5, depthMaxM: 30, environment: '산호초', riskLevel: 1, discovered: false, possibleSpecies: [1, 2, 7, 8], equipmentRequired: '기본' },
-  { id: 2, name: '열대 해초밭', region: 'tropical', x: 900, z: 400, depthMinM: 3, depthMaxM: 20, environment: '해초밭', riskLevel: 1, discovered: false, possibleSpecies: [13, 16, 29], equipmentRequired: '기본' },
-  { id: 3, name: '열대 심호', region: 'tropical', x: 1200, z: 1000, depthMinM: 20, depthMaxM: 60, environment: '심호', riskLevel: 2, discovered: false, possibleSpecies: [11, 17, 38], equipmentRequired: '중급 산소통' },
-  { id: 4, name: '열대 해저 동굴', region: 'tropical', x: 300, z: 1200, depthMinM: 15, depthMaxM: 50, environment: '동굴', riskLevel: 3, discovered: false, possibleSpecies: [15, 40], equipmentRequired: '중급 잠수복' },
+  // 열대 산호해 (0~35m) - 4 sites
+  { id: 1, name: '산호초 탐사지', region: 'tropical', x: 1000, z: 800, depthMinM: 5, depthMaxM: 25, environment: '산호초', riskLevel: 1, discovered: false, possibleSpecies: [1, 2, 7, 8], equipmentRequired: '기본' },
+  { id: 2, name: '열대 해초밭', region: 'tropical', x: 2000, z: 1200, depthMinM: 3, depthMaxM: 20, environment: '해초밭', riskLevel: 1, discovered: false, possibleSpecies: [13, 16, 29], equipmentRequired: '기본' },
+  { id: 3, name: '열대 심호', region: 'tropical', x: 2500, z: 2000, depthMinM: 15, depthMaxM: 35, environment: '심호', riskLevel: 2, discovered: false, possibleSpecies: [11, 17, 38], equipmentRequired: '기본' },
+  { id: 4, name: '열대 해저 동굴', region: 'tropical', x: 800, z: 2200, depthMinM: 10, depthMaxM: 30, environment: '동굴', riskLevel: 3, discovered: false, possibleSpecies: [15, 40], equipmentRequired: '기본' },
 
-  // Mangrove (4 sites)
-  { id: 5, name: '맹그로브 뿌리', region: 'mangrove', x: 2200, z: 500, depthMinM: 2, depthMaxM: 15, environment: '맹그로브', riskLevel: 1, discovered: false, possibleSpecies: [101, 102, 106], equipmentRequired: '기본' },
-  { id: 6, name: '늪지대 탐사', region: 'mangrove', x: 2500, z: 800, depthMinM: 5, depthMaxM: 25, environment: '늪', riskLevel: 2, discovered: false, possibleSpecies: [107, 128], equipmentRequired: '기본' },
-  { id: 7, name: '맹그로브 심층', region: 'mangrove', x: 2800, z: 600, depthMinM: 20, depthMaxM: 50, environment: '심층', riskLevel: 3, discovered: false, possibleSpecies: [118, 132], equipmentRequired: '중급 산소통' },
-  { id: 8, name: '어부 마을 해안', region: 'mangrove', x: 3000, z: 1000, depthMinM: 3, depthMaxM: 20, environment: '해안', riskLevel: 1, discovered: false, possibleSpecies: [103, 112, 134], equipmentRequired: '기본' },
+  // 탁한 하구해 (2~30m) - 4 sites
+  { id: 5, name: '맹그로브 뿌리', region: 'mangrove', x: 4000, z: 800, depthMinM: 2, depthMaxM: 15, environment: '맹그로브', riskLevel: 1, discovered: false, possibleSpecies: [101, 102, 106], equipmentRequired: '기본' },
+  { id: 6, name: '늪지대 탐사', region: 'mangrove', x: 5000, z: 1500, depthMinM: 5, depthMaxM: 25, environment: '늪', riskLevel: 2, discovered: false, possibleSpecies: [107, 128], equipmentRequired: '기본' },
+  { id: 7, name: '맹그로브 심층', region: 'mangrove', x: 5500, z: 2000, depthMinM: 15, depthMaxM: 30, environment: '심층', riskLevel: 3, discovered: false, possibleSpecies: [118, 132], equipmentRequired: '기본' },
+  { id: 8, name: '어부 마을 해안', region: 'mangrove', x: 4500, z: 2500, depthMinM: 3, depthMaxM: 20, environment: '해안', riskLevel: 1, discovered: false, possibleSpecies: [103, 112, 134], equipmentRequired: '기본' },
 
-  // Glacier (4 sites)
-  { id: 9, name: '빙하 수중 동굴', region: 'glacier', x: 3800, z: 500, depthMinM: 30, depthMaxM: 100, environment: '빙하 동굴', riskLevel: 4, discovered: false, possibleSpecies: [44, 56], equipmentRequired: '고급 잠수복' },
-  { id: 10, name: '북극 해저', region: 'glacier', x: 4200, z: 800, depthMinM: 50, depthMaxM: 200, environment: '북극 해저', riskLevel: 3, discovered: false, possibleSpecies: [41, 47, 52], equipmentRequired: '고급 산소통' },
-  { id: 11, name: '빙하 산호초', region: 'glacier', x: 3600, z: 1200, depthMinM: 20, depthMaxM: 80, environment: '냉수 산호초', riskLevel: 2, discovered: false, possibleSpecies: [49, 60, 64], equipmentRequired: '보온 잠수복' },
-  { id: 12, name: '대서양 빙하', region: 'glacier', x: 4400, z: 1400, depthMinM: 100, depthMaxM: 300, environment: '대서양 심해', riskLevel: 4, discovered: false, possibleSpecies: [44, 61, 63], equipmentRequired: '심해용 장비' },
+  // 대양 난류해 (10~120m) - 4 sites
+  { id: 13, name: '대양 산호초', region: 'ocean', x: 7000, z: 800, depthMinM: 10, depthMaxM: 50, environment: '대양 산호초', riskLevel: 2, discovered: false, possibleSpecies: [136, 143, 148], equipmentRequired: '기본' },
+  { id: 14, name: '대양 심층', region: 'ocean', x: 8500, z: 1500, depthMinM: 60, depthMaxM: 120, environment: '대양 심층', riskLevel: 4, discovered: false, possibleSpecies: [147, 150, 152], equipmentRequired: '고급 장비' },
+  { id: 15, name: '상어 회유지', region: 'ocean', x: 7500, z: 2200, depthMinM: 30, depthMaxM: 100, environment: '회유지', riskLevel: 3, discovered: false, possibleSpecies: [138, 139, 146], equipmentRequired: '고급 장비' },
+  { id: 16, name: '대양 해저 평원', region: 'ocean', x: 9000, z: 2500, depthMinM: 80, depthMaxM: 120, environment: '해저 평원', riskLevel: 5, discovered: false, possibleSpecies: [147, 152, 172], equipmentRequired: '고급 장비' },
 
-  // Ocean (4 sites)
-  { id: 13, name: '대양 산호초', region: 'ocean', x: 600, z: 2000, depthMinM: 10, depthMaxM: 50, environment: '대양 산호초', riskLevel: 2, discovered: false, possibleSpecies: [136, 143, 148], equipmentRequired: '기본' },
-  { id: 14, name: '대양 심층', region: 'ocean', x: 1200, z: 2400, depthMinM: 100, depthMaxM: 500, environment: '대양 심층', riskLevel: 4, discovered: false, possibleSpecies: [147, 150, 152], equipmentRequired: '심해용 장비' },
-  { id: 15, name: '상어 회유지', region: 'ocean', x: 1800, z: 2200, depthMinM: 20, depthMaxM: 100, environment: '회유지', riskLevel: 3, discovered: false, possibleSpecies: [138, 139, 146], equipmentRequired: '고급 잠수복' },
-  { id: 16, name: '대양 해저 평원', region: 'ocean', x: 400, z: 2800, depthMinM: 200, depthMaxM: 800, environment: '해저 평원', riskLevel: 5, discovered: false, possibleSpecies: [147, 152, 172], equipmentRequired: '심해용 장비' },
+  // 한랭 대륙붕 (20~160m) - 4 sites
+  { id: 9, name: '빙하 수중 동굴', region: 'glacier', x: 1000, z: 4000, depthMinM: 40, depthMaxM: 100, environment: '빙하 동굴', riskLevel: 4, discovered: false, possibleSpecies: [44, 56], equipmentRequired: '특수 장비' },
+  { id: 10, name: '북극 해저', region: 'glacier', x: 2000, z: 5000, depthMinM: 80, depthMaxM: 160, environment: '북극 해저', riskLevel: 3, discovered: false, possibleSpecies: [41, 47, 52], equipmentRequired: '특수 장비' },
+  { id: 11, name: '빙하 산호초', region: 'glacier', x: 1500, z: 6000, depthMinM: 30, depthMaxM: 120, environment: '냉수 산호초', riskLevel: 2, discovered: false, possibleSpecies: [49, 60, 64], equipmentRequired: '고급 장비' },
+  { id: 12, name: '대서양 빙하', region: 'glacier', x: 2500, z: 7000, depthMinM: 100, depthMaxM: 160, environment: '대서양 심해', riskLevel: 4, discovered: false, possibleSpecies: [44, 61, 63], equipmentRequired: '특수 장비' },
 
-  // Volcanic (4 sites)
-  { id: 17, name: '화산 열수구', region: 'volcanic', x: 3400, z: 1800, depthMinM: 500, depthMaxM: 2000, environment: '열수구', riskLevel: 5, discovered: false, possibleSpecies: [71, 79, 85], equipmentRequired: '내열 잠수복' },
-  { id: 18, name: '용암 지대', region: 'volcanic', x: 4000, z: 2000, depthMinM: 300, depthMaxM: 1500, environment: '용암', riskLevel: 4, discovered: false, possibleSpecies: [75, 80, 83], equipmentRequired: '내열 잠수복' },
-  { id: 19, name: '화산 심해', region: 'volcanic', x: 4400, z: 2200, depthMinM: 1000, depthMaxM: 3000, environment: '화산 심해', riskLevel: 5, discovered: false, possibleSpecies: [87, 95, 100], equipmentRequired: '심해용 장비' },
-  { id: 20, name: '화산 동굴', region: 'volcanic', x: 3800, z: 2400, depthMinM: 200, depthMaxM: 1000, environment: '화산 동굴', riskLevel: 4, discovered: false, possibleSpecies: [73, 78, 92], equipmentRequired: '고급 잠수복' },
+  // 온대 해초숲 (5~60m) - 4 sites
+  { id: 17, name: '해초 숲 탐사', region: 'volcanic', x: 4000, z: 4000, depthMinM: 10, depthMaxM: 40, environment: '해초숲', riskLevel: 2, discovered: false, possibleSpecies: [71, 79, 85], equipmentRequired: '기본' },
+  { id: 18, name: '암초 지대', region: 'volcanic', x: 5000, z: 5000, depthMinM: 20, depthMaxM: 60, environment: '암초', riskLevel: 3, discovered: false, possibleSpecies: [75, 80, 83], equipmentRequired: '고급 장비' },
+  { id: 19, name: '온대 심층', region: 'volcanic', x: 5500, z: 6000, depthMinM: 40, depthMaxM: 60, environment: '온대 심해', riskLevel: 4, discovered: false, possibleSpecies: [87, 95, 100], equipmentRequired: '고급 장비' },
+  { id: 20, name: '해초 동굴', region: 'volcanic', x: 4500, z: 7000, depthMinM: 30, depthMaxM: 60, environment: '동굴', riskLevel: 3, discovered: false, possibleSpecies: [73, 78, 92], equipmentRequired: '고급 장비' },
 
-  // Deepsea (4 sites)
-  { id: 21, name: '심해 평원', region: 'deepsea', x: 2800, z: 2600, depthMinM: 2000, depthMaxM: 4000, environment: '심해 평원', riskLevel: 5, discovered: false, possibleSpecies: [176, 180, 184], equipmentRequired: '심해용 장비' },
-  { id: 22, name: '심해 해구', region: 'deepsea', x: 3600, z: 2800, depthMinM: 4000, depthMaxM: 6000, environment: '해구', riskLevel: 5, discovered: false, possibleSpecies: [177, 179, 192], equipmentRequired: '심해용 장비' },
-  { id: 23, name: '심해 열수구', region: 'deepsea', x: 4200, z: 3000, depthMinM: 3000, depthMaxM: 5000, environment: '심해 열수구', riskLevel: 5, discovered: false, possibleSpecies: [186, 189, 197], equipmentRequired: '심해용 장비' },
-  { id: 24, name: '심연의 문', region: 'deepsea', x: 4600, z: 3100, depthMinM: 5000, depthMaxM: 8000, environment: '심연', riskLevel: 5, discovered: false, possibleSpecies: [195, 199, 200], equipmentRequired: '가이아 장비' },
+  // 심해 협곡 (60~300m) - 4 sites
+  { id: 21, name: '심해 평원', region: 'deepsea', x: 7000, z: 4000, depthMinM: 80, depthMaxM: 200, environment: '심해 평원', riskLevel: 5, discovered: false, possibleSpecies: [176, 180, 184], equipmentRequired: '특수 장비' },
+  { id: 22, name: '심해 해구', region: 'deepsea', x: 8000, z: 5500, depthMinM: 150, depthMaxM: 300, environment: '해구', riskLevel: 5, discovered: false, possibleSpecies: [177, 179, 192], equipmentRequired: '전설 장비' },
+  { id: 23, name: '심해 열수구', region: 'deepsea', x: 9000, z: 6500, depthMinM: 200, depthMaxM: 300, environment: '심해 열수구', riskLevel: 5, discovered: false, possibleSpecies: [186, 189, 197], equipmentRequired: '전설 장비' },
+  { id: 24, name: '심연의 문', region: 'deepsea', x: 8500, z: 7500, depthMinM: 250, depthMaxM: 300, environment: '심연', riskLevel: 5, discovered: false, possibleSpecies: [195, 199, 200], equipmentRequired: '전설 장비' },
 ];
 
 export const COMPANIONS: CompanionData[] = [

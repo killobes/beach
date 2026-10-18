@@ -32,7 +32,7 @@ export function validateAndAdjustSpeciesDepths(): DepthValidationResult {
   };
 
   SPECIES_DATA.forEach(species => {
-    const depthRange = DEPTH_CONFIG.regionDepths[species.region];
+    const depthRange = DEPTH_CONFIG.regionDepths[species.region as keyof typeof DEPTH_CONFIG.regionDepths];
     const isValid = validateSpeciesDepth(species, depthRange);
 
     if (isValid) {
