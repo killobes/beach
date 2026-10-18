@@ -11,6 +11,8 @@ import { EconomySystem, DEFAULT_ECONOMY_CONFIG } from '../systems/EconomySystem'
 import { WeatherSystem } from '../systems/WeatherSystem';
 import { validateState, sanitizeSnapshot, detectImpossibleState, ActionRateLimiter } from '../systems/ValidationSystem';
 import { TravelingMerchantSystem, DEFAULT_MERCHANT_CONFIG, type MerchantState } from '../systems/TravelingMerchant';
+import { IntroSystem } from '../systems/IntroSystem';
+import { HomeBaseSystem, type HouseState } from '../systems/HomeBaseSystem';
 
 // ═══════════════════════════════════════════
 // TYPES
