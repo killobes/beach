@@ -89,7 +89,7 @@ export class CreatureBehaviorSystem {
       return;
     }
 
-    if (behaviors.includes('ambush') && creature.behaviorState === 'ambush_wait') {
+    if (behaviors.includes('ambush_predator') && creature.behaviorState === 'ambush_wait') {
       if (distToDiver < 5 || this.hasPreyNearby(creature, allCreatures, 8)) {
         creature.behaviorState = 'ambush_strike';
       } else {
@@ -103,7 +103,7 @@ export class CreatureBehaviorSystem {
       return;
     }
 
-    if (behaviors.includes('prey_chase') && creature.hunger > 0.5) {
+    if (behaviors.includes('active_hunter') && creature.hunger > 0.5) {
       const prey = this.findPrey(creature, allCreatures, species, 50);
       if (prey) {
         this.behaviorChase(creature, prey, dtSec);
@@ -121,7 +121,7 @@ export class CreatureBehaviorSystem {
       return;
     }
 
-    if (behaviors.includes('benthic_rest') && Math.random() < 0.01) {
+    if (behaviors.includes('benthic') && Math.random() < 0.01) {
       creature.behaviorState = 'rest';
       this.behaviorRest(creature, dtSec);
       return;
@@ -134,7 +134,7 @@ export class CreatureBehaviorSystem {
   private shouldFlee(creature: CreatureState, species: SpeciesData, distToDiver: number): boolean {
     if (distToDiver > 30) return false;
     if (species.behaviors.includes('evasive')) return distToDiver < 20;
-    if (species.behaviors.includes('ambush')) return false; // ambushers don't flee
+    if (species.behaviors.includes('ambush_predator')) return false; // ambushers don't flee
     if (species.rarity >= 4 && distToDiver < 10) return true;
     return distToDiver < 5 && species.avgWeightKg < 50;
   }
