@@ -4,6 +4,7 @@
 export type Region = 'tropical' | 'glacier' | 'volcanic' | 'mangrove' | 'ocean' | 'deepsea';
 export type VerificationStatus = 'VERIFIED' | 'GAME_ESTIMATE';
 export type LengthType = 'TL' | 'FL' | 'SL'; // Total Length, Fork Length, Standard Length
+export type SpeciesCategory = 'fish' | 'shark_ray' | 'mammal' | 'cephalopod' | 'crustacean' | 'cnidaria' | 'echinoderm' | 'reptile' | 'bird' | 'gastropod' | 'worm' | 'sponge';
 export type BehaviorPattern =
   | 'solitary' | 'schooling' | 'evasive' | 'ambush' | 'benthic_rest'
   | 'prey_chase' | 'nocturnal' | 'vertical_migration' | 'territorial' | 'special';
@@ -13,6 +14,7 @@ export interface SpeciesData {
   name: string;
   scientificName: string;
   region: Region;
+  category?: SpeciesCategory; // 생물 분류 (optional for backward compatibility)
   avgLengthCm: number;
   avgWeightKg: number;
   maxLengthCm: number;
@@ -67,7 +69,7 @@ export const SPECIES_DATA: SpeciesData[] = [
   // TROPICAL ZONE (ID 1-40)
   // ═══════════════════════════════════════════
   sp(1, '흰동가리', 'Amphiprion ocellaris', 'tropical', 10, 0.05, 12, 0.08, 0.00004, 2.9, 'TL', 'VERIFIED', 'FishBase', true, false, ['territorial', 'special'], 1, 8, 1, 50, 10),
-  sp(2, '블루탱', 'Paracanthurus hepatus', 'tropical', 25, 0.3, 31, 0.45, 0.00003, 3.0, 'TL', 'VERIFIED', 'FishBase', true, false, ['schooling'], 2, 20, 2, 120, 15),
+  sp(2, '흰꼬리나비고기', 'Chaetodon epippus', 'tropical', 18, 0.15, 22, 0.2, 0.00005, 2.9, 'FL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'territorial'], 2, 20, 2, 100, 12),
   sp(3, '나폴레옹피쉬', 'Cheilinus undulatus', 'tropical', 150, 60, 230, 190, 0.00001, 3.1, 'TL', 'VERIFIED', 'FishBase/IUCN', true, true, ['solitary', 'special'], 2, 60, 5, 5000, 100),
   sp(4, '만새기', 'Coryphaena hippurus', 'tropical', 150, 15, 200, 40, 0.000008, 3.05, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'prey_chase'], 0, 80, 2, 300, 20),
   sp(5, '흑기새치', 'Istiompax indica', 'tropical', 300, 200, 500, 700, 0.000005, 3.1, 'TL', 'VERIFIED', 'FishBase', true, false, ['solitary', 'prey_chase'], 0, 200, 4, 2000, 50),
@@ -301,9 +303,21 @@ export const SPECIES_BY_REGION: Record<Region, SpeciesData[]> = {
   deepsea: SPECIES_DATA.filter(s => s.region === 'deepsea'),
 };
 
+// Non-fish species detection (for integration warning)
+const NON_FISH_KEYWORDS = [
+  '돌고래', '고래', '물개', '흰곰', '펭귄', '악어',  // mammals, birds, reptiles
+  '오징어', '문어',  // cephalopods
+  '게', '새우',  // crustaceans
+  '해파리',  // cnidaria
+  '성게', '불가사리', '해삼',  // echinoderms
+  '고둥', '전복',  // gastropods
+];
+
 // Validation
-export function validateSpeciesDatabase(): { valid: boolean; errors: string[] } {
+export function validateSpeciesDatabase(): { valid: boolean; errors: string[]; warnings: string[]; nonFishSpecies: number[] } {
   const errors: string[] = [];
+  const warnings: string[] = [];
+  const nonFishSpecies: number[] = [];
   const ids = new Set<number>();
   const names = new Set<string>();
 
@@ -322,6 +336,12 @@ export function validateSpeciesDatabase(): { valid: boolean; errors: string[] } 
     if (s.gameMaxLengthCm <= s.gameMinLengthCm) errors.push(`ID ${s.id}: maxLength <= minLength`);
     if (s.gameBaseWeightKg <= 0) errors.push(`ID ${s.id}: baseWeight <= 0`);
     if (s.lengthWeightA <= 0 || s.lengthWeightB <= 0) errors.push(`ID ${s.id}: invalid W=a*L^b params`);
+
+    // Detect non-fish species
+    const isNonFish = NON_FISH_KEYWORDS.some(keyword => s.name.includes(keyword));
+    if (isNonFish) {
+      nonFishSpecies.push(s.id);
+    }
   }
 
   // Check region counts
@@ -334,5 +354,11 @@ export function validateSpeciesDatabase(): { valid: boolean; errors: string[] } 
   if (counts.ocean !== 40) errors.push(`Ocean: expected 40, got ${counts.ocean}`);
   if (counts.deepsea !== 25) errors.push(`Deepsea: expected 25, got ${counts.deepsea}`);
 
-  return { valid: errors.length === 0, errors };
+  // Warnings
+  if (nonFishSpecies.length > 0) {
+    warnings.push(`Non-fish species detected: ${nonFishSpecies.length} species (IDs: ${nonFishSpecies.join(', ')})`);
+    warnings.push(`These need to be replaced with fish species to comply with the "200 fish species" contract`);
+  }
+
+  return { valid: errors.length === 0, errors, warnings, nonFishSpecies };
 }

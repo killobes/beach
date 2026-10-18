@@ -33,10 +33,11 @@ export function runAllTests(): TestResult[] {
 
 function test1_SpeciesLoading(): TestResult {
   const validation = validateSpeciesDatabase();
+  const warnings = validation.warnings.length > 0 ? ` | 경고: ${validation.warnings.length}개` : '';
   return {
     name: '1. 200종 데이터 로딩',
     passed: validation.valid,
-    message: validation.valid ? `200종 로드 완료 (${SPECIES_DATA.length}종)` : `오류: ${validation.errors.join(', ')}`
+    message: validation.valid ? `200종 로드 완료 (${SPECIES_DATA.length}종)${warnings}` : `오류: ${validation.errors.join(', ')}`
   };
 }
 

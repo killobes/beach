@@ -2,7 +2,7 @@
 // 세션 A의 3D 렌더링과 세션 B의 게임 엔진 통합 검증
 
 import { createGame, type GameState } from '../core/GameEngine';
-import { SPECIES_BY_ID } from '../data/species';
+import { SPECIES_BY_ID, validateSpeciesDatabase } from '../data/species';
 import { WORLD_CONFIG } from '../data/world';
 
 export interface IntegrationTestResult {
@@ -96,6 +96,13 @@ function test4_CreatureDataIntegrity(): IntegrationTestResult {
       if (!species) return { name: '4. 생물 데이터', passed: false, message: `Unknown species: ${spec.speciesId}` };
       if (spec.lengthCm <= 0) return { name: '4. 생물 데이터', passed: false, message: `Invalid length: ${spec.lengthCm}` };
       if (spec.weightKg <= 0) return { name: '4. 생물 데이터', passed: false, message: `Invalid weight: ${spec.weightKg}` };
+    }
+
+    // Check for non-fish species warning
+    const validation = validateSpeciesDatabase();
+    const nonFishCount = validation.nonFishSpecies.length;
+    if (nonFishCount > 0) {
+      return { name: '4. 생물 데이터', passed: true, message: `Data OK | ⚠️ ${nonFishCount} non-fish species detected (needs review)` };
     }
 
     return { name: '4. 생물 데이터', passed: true, message: 'Creature data integrity verified' };
