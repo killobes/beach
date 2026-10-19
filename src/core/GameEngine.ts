@@ -178,6 +178,35 @@ class SeededRNG {
 
 let uidCounter = 0;
 
+/**
+ * 개체 고유 ID 생성
+ * 형식: fish_{speciesId}_{region}_{sequentialNumber}
+ * 예: fish_1_tropical_001, fish_45_glacier_042
+ * 
+ * 세션 A와 세션 B 모두 이 형식을 사용해야 함
+ */
+function generateSpecimenUID(speciesId: number, region: Region): string {
+  uidCounter++;
+  const seq = String(uidCounter).padStart(3, '0');
+  return `fish_${speciesId}_${region}_${seq}`;
+}
+
+/**
+ * 개체 ID에서 정보 추출
+ */
+export function parseSpecimenUID(uid: string): { speciesId: number; region: Region; seq: number } | null {
+  const parts = uid.split('_');
+  if (parts.length !== 4 || parts[0] !== 'fish') return null;
+  
+  const speciesId = parseInt(parts[1], 10);
+  const region = parts[2] as Region;
+  const seq = parseInt(parts[3], 10);
+  
+  if (isNaN(speciesId) || isNaN(seq)) return null;
+  
+  return { speciesId, region, seq };
+}
+
 function generateSpecimen(species: SpeciesData, rng: SeededRNG, region: Region, gameTime: number): Specimen {
   const baseLength = species.gameBaseLengthCm;
   const stddev = baseLength * 0.2;
@@ -199,7 +228,7 @@ function generateSpecimen(species: SpeciesData, rng: SeededRNG, region: Region, 
   const behaviorState = behaviors[rng.nextInt(0, behaviors.length - 1)];
 
   return {
-    uid: `spec_${++uidCounter}_${Date.now()}`,
+    uid: generateSpecimenUID(species.id, region),
     speciesId: species.id,
     lengthCm,
     weightKg: clampedWeight,
@@ -498,53 +527,159 @@ export function createGame(config: GameConfig) {
     return { success: true };
   }
 
-  function handleCatchAttempt(specimenId: string, distanceM: number): GameActionResult {
-    if (!state.inWater) return { success: false, reason: 'Not in water' };
+  /**
+   * 포획 시도
+   * @param specimenId - 개체 ID (fish_{speciesId}_{region}_{seq} 형식)
+   * @param distanceM - 잠수부와 개체 간 거리 (m). 생략 시 자동 계산
+   */
+  function handleCatchAttempt(specimenId: string, distanceM?: number): GameActionResult {
+    // 1. 수중 상태 확인
+    if (!state.inWater) {
+      return { success: false, reason: '수중 상태가 아닙니다' };
+    }
 
-    const harpoon = HARPOONS.find(h => h.id === state.equippedHarpoon)!;
-    if (distanceM > harpoon.range) return { success: false, reason: 'Out of range' };
-
+    // 2. 개체 찾기
     const specimen = state.activeSpecimens.find(s => s.uid === specimenId);
-    if (!specimen) return { success: false, reason: 'Specimen not found' };
+    if (!specimen) {
+      return { success: false, reason: `개체를 찾을 수 없습니다: ${specimenId}` };
+    }
 
-    const species = SPECIES_BY_ID.get(specimen.speciesId)!;
+    // 3. 거리 자동 계산 (제공되지 않은 경우)
+    if (distanceM === undefined) {
+      distanceM = distance3D(
+        state.diverX, state.diverZ, state.diverY,
+        specimen.x, specimen.z, -specimen.depthM
+      );
+    }
 
-    // Protected species cannot be caught
-    if (species.protected) return { success: false, reason: 'This species is protected' };
+    // 4. 종 정보 가져오기
+    const species = SPECIES_BY_ID.get(specimen.speciesId);
+    if (!species) {
+      return { success: false, reason: `종 정보를 찾을 수 없습니다: ${specimen.speciesId}` };
+    }
 
-    // Cargo check
-    const shipData = SHIP_UPGRADES.find(s => s.level === state.shipLevel)!;
-    if (state.cargo.length >= shipData.cargoCapacity) return { success: false, reason: 'Cargo full' };
+    // 5. 작살 정보 가져오기
+    const harpoon = HARPOONS.find(h => h.id === state.equippedHarpoon);
+    if (!harpoon) {
+      return { success: false, reason: '작살을 찾을 수 없습니다' };
+    }
 
-    // Catch probability calculation
-    let catchProb = 0.5;
+    // 6. 거리 체크
+    if (distanceM > harpoon.range) {
+      return { 
+        success: false, 
+        reason: `사거리 부족: ${distanceM.toFixed(1)}m > ${harpoon.range}m`,
+        data: { distance: distanceM, maxRange: harpoon.range }
+      };
+    }
+
+    // 7. 수심 체크 (장비 제한)
+    const tankData = TANKS.find(t => t.id === state.equippedTank);
+    const suitData = SUITS.find(s => s.id === state.equippedSuit);
+    const maxDepth = Math.min(tankData?.maxDepth || 30, suitData?.maxDepth || 30);
+    
+    if (specimen.depthM > maxDepth) {
+      return {
+        success: false,
+        reason: `수심 제한 초과: ${specimen.depthM}m > ${maxDepth}m`,
+        data: { depth: specimen.depthM, maxDepth }
+      };
+    }
+
+    // 8. 보호종 체크
+    if (species.protected) {
+      return { 
+        success: false, 
+        reason: '보호종은 포획할 수 없습니다',
+        data: { species: species.name, protected: true }
+      };
+    }
+
+    // 9. 화물 공간 체크
+    const shipData = SHIP_UPGRADES.find(s => s.level === state.shipLevel);
+    if (!shipData) {
+      return { success: false, reason: '선박 정보를 찾을 수 없습니다' };
+    }
+    
+    if (state.cargo.length >= shipData.cargoCapacity) {
+      return { 
+        success: false, 
+        reason: `화물 공간 부족: ${state.cargo.length}/${shipData.cargoCapacity}`,
+        data: { current: state.cargo.length, capacity: shipData.cargoCapacity }
+      };
+    }
+
+    // 10. 포획 확률 계산
+    let catchProb = 0.5; // 기본 확률
+    
+    // 작살 보너스
     catchProb += harpoon.catchBonus;
-    catchProb -= (distanceM / harpoon.range) * 0.3;
+    
+    // 거리 페널티 ( 가까울수록 유리)
+    const distanceRatio = distanceM / harpoon.range;
+    catchProb -= distanceRatio * 0.3;
+    
+    // 작살 안정성 보너스
     catchProb += harpoon.stability * 0.02;
+    
+    // 희귀도 페널티
     catchProb -= species.rarity * 0.05;
+    
+    // 수심 페널티 (깊을수록 어려움)
+    const depthPenalty = (specimen.depthM / maxDepth) * 0.1;
+    catchProb -= depthPenalty;
 
-    // Companion bonus
-    if (state.companions.includes('ari')) catchProb += 0.1;
+    // 동료 보너스
+    if (state.companions.includes('ari')) {
+      catchProb += 0.1; // 아리: 포획 보너스
+    }
 
-    // Weather effect
+    // 날씨 효과
     const weatherEffect = WEATHER_EFFECTS[state.weather];
     catchProb *= weatherEffect.catchMod;
 
+    // 확률 제한 (5% ~ 95%)
     catchProb = Math.max(0.05, Math.min(0.95, catchProb));
 
+    // 11. 포획 시도
     const roll = rng.next();
+    
     if (roll < catchProb) {
-      // Success
-      state.cargo.push({ ...specimen });
+      // ✅ 성공
+      const caughtSpecimen = { ...specimen };
+      state.cargo.push(caughtSpecimen);
       state.activeSpecimens = state.activeSpecimens.filter(s => s.uid !== specimenId);
       state.totalCatches++;
 
-      // Update codex
+      // 도감 업데이트
       updateCodexCatch(specimen);
 
-      return { success: true, data: { specimen, catchProb } };
+      return { 
+        success: true, 
+        data: { 
+          specimen: caughtSpecimen,
+          catchProb,
+          distance: distanceM,
+          depth: specimen.depthM,
+          species: species.name,
+          length: specimen.lengthCm,
+          weight: specimen.weightKg,
+          value: Math.round(species.sellBasePrice * (specimen.lengthCm / species.gameBaseLengthCm))
+        }
+      };
     } else {
-      return { success: false, reason: 'Catch failed', data: { catchProb } };
+      // ❌ 실패
+      return { 
+        success: false, 
+        reason: '포획에 실패했습니다',
+        data: { 
+          catchProb,
+          roll,
+          distance: distanceM,
+          depth: specimen.depthM,
+          species: species.name
+        }
+      };
     }
   }
 
@@ -1105,14 +1240,80 @@ export function createGame(config: GameConfig) {
     }
   }
 
+  // ─── Helper API for Session A ───
+
+  /**
+   * 주변 개체 조회 (세션 A용)
+   * @param x - 중심 X 좌표
+   * @param z - 중심 Z 좌표
+   * @param radius - 검색 반경 (m)
+   * @returns 범위 내 개체 목록 (거리순 정렬)
+   */
+  function getNearbySpecimens(x: number, z: number, radius: number = 50): Array<Specimen & { distance: number }> {
+    return state.activeSpecimens
+      .map(spec => ({
+        ...spec,
+        distance: distance2D(x, z, spec.x, spec.z)
+      }))
+      .filter(spec => spec.distance <= radius)
+      .sort((a, b) => a.distance - b.distance);
+  }
+
+  /**
+   * ID로 개체 정보 가져오기 (세션 A용)
+   * @param uid - 개체 ID (fish_{speciesId}_{region}_{seq} 형식)
+   * @returns 개체 정보 또는 null
+   */
+  function getSpecimenById(uid: string): Specimen | null {
+    return state.activeSpecimens.find(s => s.uid === uid) || null;
+  }
+
+  /**
+   * 두 지점 간 거리 계산 (세션 A용)
+   */
+  function calculateDistance(x1: number, z1: number, x2: number, z2: number): number {
+    return distance2D(x1, z1, x2, z2);
+  }
+
+  /**
+   * 현재 잠수부 위치 가져오기 (세션 A용)
+   */
+  function getDiverPosition(): { x: number; y: number; z: number } | null {
+    if (!state.inWater) return null;
+    return {
+      x: state.diverX,
+      y: state.diverY,
+      z: state.diverZ
+    };
+  }
+
+  /**
+   * 현재 선박 위치 가져오기 (세션 A용)
+   */
+  function getShipPosition(): { x: number; y: number; z: number } {
+    return {
+      x: state.shipX,
+      y: 0,
+      z: state.shipZ
+    };
+  }
+
   // ─── Return API ───
 
   return {
+    // Core API
     dispatch,
     getSnapshot,
     subscribe,
     save,
     load,
+    
+    // Helper API for Session A
+    getNearbySpecimens,
+    getSpecimenById,
+    calculateDistance,
+    getDiverPosition,
+    getShipPosition,
   };
 }
 

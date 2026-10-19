@@ -75,6 +75,7 @@ export function adaptForSessionA(state: GameState): {
     heightM: number;
     seaLevel: number;
   };
+  nearbyCreatures?: Array<CreatureRenderData & { distance: number }>;
 } {
   // Ship
   const ship: ShipState = {
@@ -138,7 +139,22 @@ export function adaptForSessionA(state: GameState): {
     seaLevel: WORLD_CONFIG.seaLevel,
   };
 
-  return { ship, diver, creatures, weather, world };
+  // Nearby creatures (for Session A convenience)
+  let nearbyCreatures: Array<CreatureRenderData & { distance: number }> | undefined;
+  if (state.inWater) {
+    nearbyCreatures = creatures
+      .map(c => ({
+        ...c,
+        distance: Math.sqrt(
+          Math.pow(c.position.x - state.diverX, 2) +
+          Math.pow(c.position.z - state.diverZ, 2)
+        )
+      }))
+      .filter(c => c.distance <= 50) // 50m 반경
+      .sort((a, b) => a.distance - b.distance);
+  }
+
+  return { ship, diver, creatures, weather, world, nearbyCreatures };
 }
 
 /**
