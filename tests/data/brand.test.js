@@ -67,11 +67,46 @@ describe('SpearPals 저장 키 마이그레이션', () => {
     };
   }
 
+  // 실제 엔진 규칙(출항→입수→접근→포획)을 거쳐 신뢰 가능한 포획 상태를 만든다.
+  function catchOne(seed) {
+    const g = createGame({ seed });
+    g._state.ship.docked = false; // 출항 처리 (정박 차단 검증은 playthrough 테스트에서 수행)
+    let moved = false;
+    for (let i = 0; i < 30 && !moved; i++) {
+      moved = g.dispatch({ type: 'MOVE_SHIP', forward: 1, turn: 0.3, dtSec: 1 }).ok;
+    }
+    expect(moved).toBe(true);
+    expect(g.dispatch({ type: 'ENTER_WATER' }).ok).toBe(true);
+    const target = g.getSpecimens('tropical')[0];
+    const dv = g._state.diver;
+    dv.x = target.x; dv.z = target.z; dv.depthM = Math.abs(target.y); dv.y = -dv.depthM;
+    let success = null;
+    for (let i = 0; i < 30 && !success; i++) {
+      const r = g.dispatch({ type: 'CATCH_ATTEMPT', specimenId: target.specimenId, distanceM: 3 });
+      if (r.ok) success = r;
+    }
+    expect(success).toBeTruthy();
+    return g;
+  }
+
   it('신규 저장은 spearpals.save 키에 game:"spearpals" 메타와 함께 기록', () => {
     const storage = memStorage();
     const game = createGame({ seed: 7, storage });
-    game.dispatch({ type: 'ENTER_WATER' });
-    expect(game.dispatch({ type: 'CATCH_ATTEMPT', specimenId: 'fish_001_12', distanceM: 3 }).ok).toBe(true);
+    // 같은 시드·동일 액션 순상으로 포획 상태 재현 (RNG는 게임 로컬이므로 저장과 무관)
+    game._state.ship.docked = false;
+    let moved = false;
+    for (let i = 0; i < 30 && !moved; i++) moved = game.dispatch({ type: 'MOVE_SHIP', forward: 1, turn: 0.3, dtSec: 1 }).ok;
+    expect(moved).toBe(true);
+    expect(game.dispatch({ type: 'ENTER_WATER' }).ok).toBe(true);
+    const target = game.getSpecimens('tropical')[0];
+    const dv = game._state.diver;
+    dv.x = target.x; dv.z = target.z; dv.depthM = Math.abs(target.y); dv.y = -dv.depthM;
+    let success = null;
+    for (let i = 0; i < 30 && !success; i++) {
+      const r = game.dispatch({ type: 'CATCH_ATTEMPT', specimenId: target.specimenId, distanceM: 3 });
+      if (r.ok) success = r;
+    }
+    expect(success).toBeTruthy();
     const r = game.save();
     expect(r.ok).toBe(true);
     const raw = storage.getItem(SAVE_KEY);
@@ -82,10 +117,8 @@ describe('SpearPals 저장 키 마이그레이션', () => {
   });
 
   it('구 버전 oceangaia.save 저장본을 load하면 spearpals.save로 승격되고 구 키는 삭제', () => {
-    const src = createGame({ seed: 99 });
-    src.dispatch({ type: 'ENTER_WATER' });
-    expect(src.dispatch({ type: 'CATCH_ATTEMPT', specimenId: 'fish_001_12', distanceM: 3 }).ok).toBe(true);
-    // 구 엔진과 동일한 형태의 저장 데이터 생성
+    const src = catchOne(99);
+    // 구 엔진과 동일한 형태의 저장 데이터 생성 (game 메타 없음)
     const legacyData = JSON.stringify({
       version: '3.2.0', seed: 99,
       state: JSON.parse(JSON.stringify({ ...src._state, rngState: src._rng.getState() })),
