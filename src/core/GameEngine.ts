@@ -14,6 +14,9 @@ import { SpawnSystem, type SpawnEnv } from "../systems/SpawnSystem";
 import { stepBehavior, listSpecimens, type Specimen, type EnvContext } from "../systems/CreatureBehavior";
 import { WeatherSystem, timeOfDay, seasonOf, isNight, dayNumber, GAME_SECONDS_PER_DAY, type Weather, type Season } from "../systems/WeatherSystem";
 
+/** 프레임 틱 상한(초). 그 이상은 타임스케일 치트로 간주. */
+export const TICK_MAX_DT_SEC = 10;
+
 // ───────── 타입 ─────────
 export interface Vec3 { x: number; y: number; z: number }
 
@@ -38,6 +41,8 @@ export interface BossState { id: string; defeated: boolean; hp: number; active: 
 
 export interface GameState {
   version: string; schemaVersion: number; seed: number;
+  /** 날씨 RNG 시드 오프셋 — save/load 후에도 동일 난수 흐름 재현 (재현성 계약) */
+  weatherRngSeed: number;
   gameSeconds: number; day: number; season: Season; weather: Weather; tideLevel: number; currentSpeedMs: number;
   ship: ShipState; diver: DiverState;
   shells: number; // 조개 화폐
@@ -80,6 +85,8 @@ export interface GameConfig {
   worldConfig?: unknown;
   storage?: SaveStorage; // 주입식 저장(Node 테스트에서는 메모리 스토리지)
   enableDebugActions?: boolean; // 테스트 전용 DEBUG_SET_STATE 허용(기본 false)
+  /** 시작 게임 시각(초). 기본값 8*60(오전 8시). 낮/밤·계절 검증 및 시나리오 연출용. */
+  startGameSeconds?: number;
 }
 export interface SaveStorage { getItem(k: string): string | null; setItem(k: string, v: string): void; removeItem(k: string): void }
 
@@ -96,6 +103,8 @@ export interface GameInstance {
   getZoneAt(x: number, z: number): string | null;
   /** 어종별 개체 풀(시리얼라이즈된 species 참조 포함) — A팀 모델 매핑용 */
   getSpeciesPool(zoneId?: string): Array<{ specimen: Specimen; species: Species }>;
+  /** 엔진에 연결된 저장 스토리지(테스트/자동화 검증용 읽기 전용 노출) */
+  storage: SaveStorage;
 }
 
 const memoryStores = new Map<string, string>();
@@ -110,20 +119,31 @@ export function memoryStorage(): SaveStorage {
 // ───────── 엔진 ─────────
 export function createGame(config: GameConfig): GameInstance {
   const rng = new Rng(config.seed);
-  const storage = config.storage ?? defaultBrowserStorage();
+  // 테스트/자동화 편의: storage 미주입 시 engine.storage에 격리 메모리 스토리지 제공.
+  // 브라우저에서는 defaultBrowserStorage()(localStorage)를 사용한다.
+  const sharedMemoryStore = memoryStorage();
+  const storage: SaveStorage = config.storage ?? (typeof localStorage !== "undefined" ? localStorage : sharedMemoryStore);
   const listeners = new Set<(s: GameState) => void>();
 
   const state: GameState = freshState(config.seed);
-  let spawnSys = new SpawnSystem(new Rng(config.seed ^ 0x9e3779b9));
-  let weatherSys = new WeatherSystem(new Rng(config.seed ^ 0x51ed270b), "tropical");
+  if (Number.isFinite(config.startGameSeconds ?? NaN) && (config.startGameSeconds as number) >= 0) {
+    state.gameSeconds = config.startGameSeconds as number;
+    state.day = dayNumber({ gameSeconds: state.gameSeconds });
+    state.season = seasonOf({ gameSeconds: state.gameSeconds });
+  }
+  // 재현성 계약: 메인 RNG와 스폰 RNG는 반드시 서로 다른 스트림을 사용한다.
+  // (mulberry32는 0과 ^0x9e3779b9가 첫 출력 이후 같은 상태가 되어 초기 세계가 꼬인다)
+  const spawnRngSeed = (config.seed >>> 0) === 0 ? 0x9e3779b9 : (config.seed * 2654435761) >>> 0;
+  const spawnSys = new SpawnSystem(new Rng(spawnRngSeed));
+  let weatherSys = new WeatherSystem(new Rng(config.seed ^ state.weatherRngSeed), "tropical");
   let inventoryUid = 0;
   let rngPersist: RngState = rng.serialize();
 
   function freshState(seed: number): GameState {
     return {
-      version: GAME_VERSION, schemaVersion: SAVE_SCHEMA_VERSION, seed,
+      version: GAME_VERSION, schemaVersion: SAVE_SCHEMA_VERSION, seed, weatherRngSeed: 0x51ed270b,
       gameSeconds: 8 * 60, day: 1, season: "SPRING", weather: "CLEAR", tideLevel: 0, currentSpeedMs: 1,
-      ship: { position: { ...WORLD.START_SHIP }, headingRad: 0, speedMs: 0, stage: 1 },
+      ship: { position: { ...WORLD.START_SHIP }, headingRad: Math.PI / 2, speedMs: 0, stage: 1 },
       diver: { mode: "ON_SHIP", position: { ...WORLD.START_SHIP }, airCurrent: 100, airMax: 100, depthM: 0 },
       shells: 120,
       ownedEquipment: { harpoon_01: true, tank_01: true, suit_01: true },
@@ -171,7 +191,8 @@ export function createGame(config: GameConfig): GameInstance {
     switch (action.type) {
       case "TICK": {
         const dt = num(action.dtSec, "dtSec");
-        if (dt === null || dt < 0 || dt > 5) return fail("TICK dtSec는 0~5초");
+        // 프레임 틱 상한: 10초. 그 이상은 타임스케일 치트로 간주해 거부한다.
+        if (dt === null || dt < 0 || dt > TICK_MAX_DT_SEC) return fail(`TICK dtSec는 0~${TICK_MAX_DT_SEC}초`);
         tick(dt);
         return ok();
       }
@@ -200,28 +221,56 @@ export function createGame(config: GameConfig): GameInstance {
       case "MOVE_DIVER": {
         if (state.diver.mode === "ON_SHIP") return fail("먼저 ENTER_WATER");
         const dx = num(action.dx, "dx"), dy = num(action.dy, "dy"), dz = num(action.dz, "dz");
-        if (dx === null || dy === null || dz === null) return fail("MOVE_DIVER 좌표 델타必须是 숫자");
+        if (dx === null || dy === null || dz === null) return fail("MOVE_DIVER 방향 입력은 유한한 숫자여야 함");
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1 || Math.abs(dz) > 1) return fail("MOVE_DIVER 방향 입력 범위 초과(-1~1)");
         const suit = currentSuit();
         const step = 2 * suit.moveMod;
         const p = state.diver.position;
-        p.x = clamp(p.x + clamp(dx, -1, 1) * step, 0, WORLD.WIDTH_M);
-        p.z = clamp(p.z + clamp(dz, -1, 1) * step, 0, WORLD.DEPTH_M);
-        const targetDepth = clamp(-p.y + clamp(dy, -1, 1) * step, 0, WORLD.MAX_DEPTH_M);
+        // 계약: y축 위쪽. 수심 = -y. dy < 0 → 하강, dy > 0 → 상승. 수평·수직 입력 독립 적용.
+        const nx = clamp(p.x + clamp(dx, -1, 1) * step, 0, WORLD.WIDTH_M);
+        const nz = clamp(p.z + clamp(dz, -1, 1) * step, 0, WORLD.DEPTH_M);
+        const targetDepth = clamp(-p.y + clamp(-dy, -1, 1) * step, 0, WORLD.MAX_DEPTH_M);
         if (targetDepth > suit.maxDepthM) return fail(`잠수복 한계 초과 (${suit.name}: 최대 ${suit.maxDepthM}m)`);
-        p.y = -targetDepth;
-        state.diver.depthM = targetDepth;
-        const zone = zoneAt(p.x, p.z);
+        const zone = zoneAt(nx, nz);
         if (!zone) return fail("월드 밖");
-        const dmin = zone.depthRangeM[0], dmax = zone.depthRangeM[1];
-        if (targetDepth < dmin * 0.1) { /* 얕음 허용 */ }
+        const dmax = zone.depthRangeM[1];
         if (targetDepth > dmax + 40) return fail(`${zone.nameKo} 수심 범위(${dmax}m)을 크게 벗어남`);
+        // 공기 검사 — 공기가 남아 있어야 이동 가능(고갈 시 이동 불가, 귀선/자동귀환 경로만 열림)
+        if (state.diver.airCurrent <= 0) {
+          const sd0 = Math.hypot(p.x - state.ship.position.x, p.z - state.ship.position.z);
+          if (sd0 <= 60) {
+            state.diver.mode = "ON_SHIP";
+            state.diver.position = { ...state.ship.position };
+            state.diver.depthM = 0;
+            pushLog("⚠ 공기 고갈 — 선박 근처 자동 귀선");
+            emit();
+            return ok({ autoReturned: true });
+          }
+          return fail("공기 고갈 — 즉시 RETURN_TO_SHIP 필요");
+        }
+        // 이동 반영 (실패 시 위치 불변)
+        p.x = nx; p.z = nz; p.y = -targetDepth;
+        state.diver.depthM = targetDepth;
+        state.diver.mode = targetDepth > 0 ? "DIVING" : "IN_WATER";
         // 공기 소모
         const eff = weatherSys.effects();
         const depthBurn = 1 + targetDepth / 60;
         state.diver.airCurrent -= 1.0 * depthBurn * eff.airBurnFactor / companionBonus("airEfficiency", 1);
         if (state.diver.airCurrent <= 0) {
           state.diver.airCurrent = 0;
-          return fail("공기 고갈 — 즉시 RETURN_TO_SHIP 필요 (선박으로 강제 귀환)");
+          // 안전한 귀환 지원: 선박 근처면 자동 귀선, 멀면 위험 경고(강제 귀환 없음)
+          const sd = Math.hypot(p.x - state.ship.position.x, p.z - state.ship.position.z);
+          if (sd <= 60) {
+            state.diver.mode = "ON_SHIP";
+            state.diver.position = { ...state.ship.position };
+            state.diver.depthM = 0;
+            pushLog("⚠ 공기 고갈 — 선박 근처 자동 귀선");
+            emit();
+            return ok({ autoReturned: true });
+          }
+          pushLog("⚠ 공기 고갈! 즉시 RETURN_TO_SHIP 필요");
+          emit();
+          return fail("공기 고갈 — 즉시 RETURN_TO_SHIP 필요");
         }
         return ok({ remainingAir: Math.round(state.diver.airCurrent) });
       }
@@ -449,18 +498,22 @@ export function createGame(config: GameConfig): GameInstance {
 
   function handleCatch(specimenId: string, distanceM: number | null): ActionResult {
     if (!specimenId) return fail("specimenId 필수");
-    if (distanceM === null || distanceM < 0) return fail("distanceM 유효값 필요");
+    if (distanceM === null || !Number.isFinite(distanceM) || distanceM < 0) return fail("distanceM 유효값 필요");
     if (state.diver.mode === "ON_SHIP") return fail("물속에서만 포획 가능");
     const spec = state.specimens.find((s) => s.id === specimenId && s.alive);
     if (!spec) return fail("대상 개체가 존재하지 않음 (ID 불일치)");
-    const sp = getSpeciesById(spec.speciesId)!;
-    if (!sp.economy.catchable) return fail("포획 불가 종");
-    if (sp.economy.protectedSpecies) return fail("보호종 — 포획 금지 (관찰 전용)");
     const harp = currentHarpoon();
+    // 1) 장비 사거리 판정 — 선언된 거리가 사거리 밖이면 좌표 검증보다 먼저 차단
     if (distanceM > harp.rangeM) return fail(`사거리 초과 (${harp.rangeM}m)`);
-    // 실제 거리 검증: 다이버 ↔ 개체 3D 거리와 A가 전달한 거리의 오차 허용
+    // 2) 실제 거리 검증: 다이버 ↔ 개체 3D 거리와 A가 전달한 거리의 오차 허용 (치트 방지)
     const real = Math.hypot(spec.x - state.diver.position.x, spec.y - state.diver.position.y, spec.z - state.diver.position.z);
     if (Math.abs(real - distanceM) > 6) return fail(`거리 불일치 (실측 ${Math.round(real)}m) — 치트/오적용 방지`);
+    // 어업 규칙: 작살은 수면 아래에서 발사한다. 표적이 수면 위면 명중 판정 대상이 아님
+    if (real <= harp.rangeM && spec.y >= 0 && state.diver.position.y >= 0) return fail("빗나감 (수면 위 표적 — 입수 후 발사)");
+    // 3) 종 규칙: 보호종/포획불가는 정밀 검증 통과 후 최종 차단 (변조 입력으로도 우회 불가)
+    const sp = getSpeciesById(spec.speciesId)!;
+    if (sp.economy.protectedSpecies) return fail("보호종 — 포획 금지 (관찰 전용)");
+    if (!sp.economy.catchable) return fail("포획 불가 종");
     // 명중 판정: 안정성 + 거리 페널티 + 도피 페널티 + 깊은 수심 페널티(장비 난이도 반영)
     const depthPenalty = state.diver.depthM > 200 ? 0.85 : 1;
     const hitProb = clamp(
@@ -521,13 +574,18 @@ export function createGame(config: GameConfig): GameInstance {
     for (const isl of ISLANDS) {
       if (Math.hypot(nx - isl.x, nz - isl.z) < isl.radiusM * 0.85) blocked = true;
     }
-    if (blocked) { state.ship.speedMs = 0; return; }
+    if (blocked) {
+      // 충돌 회피: 완전 정지 없이 135° 선회 후 감속 — 섬/경계를 따라 우회 항해 가능
+      state.ship.headingRad += Math.PI * 0.75;
+      state.ship.speedMs = Math.max(st.maxSpeedMs * 0.25, state.ship.speedMs * 0.5);
+      return;
+    }
     state.ship.position.x = nx; state.ship.position.z = nz;
     // 해역 진입 검사(선박 단계 제한)
     const zone = zoneAt(nx, nz);
     if (zone && zone.requiredShipTier > state.ship.stage) {
       // 되밀기: 물리적으로 불가능한 동작 금지 — 이전 위치 유지 + 경고
-      state.ship.speedMs = 0;
+      state.ship.speedMs = Math.min(state.ship.speedMs, shipStage().maxSpeedMs * 0.3);
       pushLog(`⚠ ${zone.nameKo}: 선박 ${zone.requiredShipTier}단계 필요 — 진입 차단`);
       emit();
     }
@@ -556,11 +614,22 @@ export function createGame(config: GameConfig): GameInstance {
       const sp = getSpeciesById(spec.speciesId)!;
       stepBehavior(spec, sp, envCtx, dt, rng);
     }
-    // 원거리 개체 제거 + 근거리 신규 스폰 (생태 유지, 성능 최적화)
-    state.specimens = state.specimens.filter((s) => Math.hypot(s.x - anchor.x, s.z - anchor.z) < 260);
+    // 원거리 개체 제거: 선박 주변 생태권은 500m 이내만 정리(잠수 중 도망친 개체 보존), 그 외 지역은 260m
+    const shipNearAnchor = Math.hypot(anchor.x - state.ship.position.x, anchor.z - state.ship.position.z) < 150;
+    const cullR = shipNearAnchor ? 500 : 260;
+    state.specimens = state.specimens.filter((s) => Math.hypot(s.x - anchor.x, s.z - anchor.z) < cullR);
+    // 개체 수 유지: 부족분을 즉시 보충 (어종 풀이 시간대/날씨로 일시 공백이어도 최소 1마리 이상 유지)
     const deficit = 40 - state.specimens.length;
     if (deficit > 0) {
-      const fresh = spawnSys.spawnAround(anchor.x, anchor.z, SPECIES, deficit, spawnEnv());
+      // 생태 유지: 부족분을 즉시 보충. 시간대/날씨 제약으로 출현 가능 종이 없으면
+      // 낮·CLEAR 조건으로 완화하여 최소 개체 수를 보장 (완화 스폰은 seq/RNG 흐름 동일 규칙 사용)
+      let fresh = spawnSys.spawnAround(anchor.x, anchor.z, SPECIES, deficit, spawnEnv());
+      if (fresh.length < deficit) {
+        const relaxed = spawnSys.spawnAround(anchor.x, anchor.z, SPECIES, deficit - fresh.length, {
+          timeOfDay0to24: 12, season: state.season, weather: "CLEAR",
+        });
+        fresh = fresh.concat(relaxed);
+      }
       state.specimens.push(...fresh);
     }
     // 화석 재출현 (게임 시간 기반)
@@ -585,7 +654,9 @@ export function createGame(config: GameConfig): GameInstance {
   function save(): void {
     const payload = {
       schemaVersion: SAVE_SCHEMA_VERSION, gameVersion: GAME_VERSION, savedAt: Date.now(),
-      state, rng: rngPersist, spawnSeq: spawnSys.serialize(), weather: weatherSys.serialize(), inventoryUid,
+      state, rng: rngPersist, spawnSeq: spawnSys.serialize(),
+      spawnRng: spawnSys.rngState(), weather: weatherSys.serialize(), weatherRng: weatherSys.rngState(),
+      inventoryUid,
     };
     storage.setItem(SAVE_KEY, JSON.stringify(payload));
   }
@@ -602,7 +673,11 @@ export function createGame(config: GameConfig): GameInstance {
     rngPersist = data.rng; 
     try { const r = Rng.restore(data.rng); copyRng(r); } catch { /* 실패 시 새 RNG */ }
     spawnSys.restore(data.spawnSeq ?? []);
+    if (data.spawnRng) spawnSys.restoreRng(data.spawnRng);
+    // state.weatherRngSeed 기준으로 시스템을 재구성 → 어떤 저장본에서도 결정적 복원
+    weatherSys = new WeatherSystem(new Rng(state.seed ^ state.weatherRngSeed), "tropical");
     weatherSys.restore(data.weather ?? weatherSys.serialize());
+    if (data.weatherRng) weatherSys.restoreRng(data.weatherRng);
     inventoryUid = data.inventoryUid ?? 0;
     emit();
     return true;
@@ -638,6 +713,7 @@ export function createGame(config: GameConfig): GameInstance {
 
   return {
     dispatch, getSnapshot, subscribe, save, load,
+    storage,
     getShipPosition: () => ({ ...state.ship.position }),
     getSpecimens: () => listSpecimens(state.specimens),
     getZoneAt: (x: number, z: number) => zoneAt(x, z)?.id ?? null,

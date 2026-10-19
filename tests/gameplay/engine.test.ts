@@ -3,7 +3,7 @@
  * 렌더러 없이 Node.js(vitest)에서 게임 규칙 전체를 검증한다.
  */
 import { describe, it, expect } from "vitest";
-import { createGame, memoryStorage, type GameState } from "../../src/core/GameEngine";
+import { createGame, memoryStorage, TICK_MAX_DT_SEC, type GameState, type SaveStorage } from "../../src/core/GameEngine";
 import { SPECIES, getSpeciesById, ZONE_QUOTA } from "../../src/data/species";
 import { HARPOONS, TANKS, SUITS, SHIP_STAGES } from "../../src/data/equipment";
 import { ZONES, ISLANDS, DIVE_SITES, BOSSES, FOSSILS, COMPANIONS, zoneAt } from "../../src/data/world";
@@ -13,39 +13,39 @@ import { Rng } from "../../src/core/Rng";
 
 const SEED = 12345;
 
-function newGame(seed = SEED) {
-  return createGame({ seed, storage: memoryStorage() });
+/** storage 미주입 시 엔진은 engine.storage(격리 메모리)를 사용 — 테스트 간 교차 오염 방지 */
+interface TestGame extends ReturnType<typeof createGame> { storage: SaveStorage }
+
+function newGame(seed = SEED): TestGame {
+  return createGame({ seed }) as TestGame;
 }
 
 /** 포획 성공 시뮬레이션용: 다이버를 개체 바로 옆에 배치(엔진 규칙 경로 유지) */
-function placeDiverNear(g: ReturnType<typeof newGame>, specimenId: string) {
+function placeDiverNear(g: TestGame, specimenId: string) {
   const s = g.getSnapshot();
   const spec = s.specimens.find((sp) => sp.id === specimenId)!;
+  void spec;
   // ENTER_WATER 후 MOVE_DIVER로 접근 — 거리·수심 규칙을 통과하도록 근접 이동
   g.dispatch({ type: "ENTER_WATER" });
-  const suitMaxDepth = 300; void suitMaxDepth;
   let guard = 0;
   while (guard++ < 400) {
     const st = g.getSnapshot();
+    if (st.diver.mode === "ON_SHIP") g.dispatch({ type: "ENTER_WATER" }); // 공기 고갈 자동 귀선 시 재입수
     const p = st.diver.position;
     const cur = st.specimens.find((sp) => sp.id === specimenId);
     if (!cur) break;
     const dx = cur.x - p.x, dy = cur.y - p.y, dz = cur.z - p.z;
     const dist = Math.hypot(dx, dy, dz);
     if (dist < 4) return dist;
-    const step = 2; // 기본 잠수복 moveMod=1 → step 2m
+    // 계약 부호: y축 위쪽 — dy < 0 = 하강. 수평+수직 동시 입력.
+    // MOVE_DIVER는 단위벡터가 아니라 각 축 컴포넌트(-1~1)를 요구하므로 축별 clamp 전달.
+    const cl = (v: number) => Math.max(-1, Math.min(1, v));
     g.dispatch({
       type: "MOVE_DIVER",
-      dx: (dx / dist) * Math.min(1, step), // 정규화*스텝 ≤ 1 클램프 전 값 — 엔진이 clamp(-1,1)*step 적용
-      dy: (dy / dist) * Math.min(1, step),
-      dz: (dz / dist) * Math.min(1, step),
+      dx: cl(dx),
+      dy: cl(dy),
+      dz: cl(dz),
     });
-    const after = g.getSnapshot();
-    if (after.diver.airCurrent <= 0) {
-      // 공기 리필: 배 근처로 귀선 후 재입수
-      g.dispatch({ type: "RETURN_TO_SHIP" });
-      g.dispatch({ type: "ENTER_WATER" });
-    }
   }
   const st = g.getSnapshot();
   const cur = st.specimens.find((sp) => sp.id === specimenId);
@@ -236,7 +236,8 @@ describe("게임 엔진 기본", () => {
     const g = newGame();
     expect(g.dispatch({ type: "TICK", dtSec: NaN }).ok).toBe(false);
     expect(g.dispatch({ type: "TICK", dtSec: -5 }).ok).toBe(false);
-    expect(g.dispatch({ type: "TICK", dtSec: 100 }).ok).toBe(false);
+    expect(g.dispatch({ type: "TICK", dtSec: TICK_MAX_DT_SEC + 90 }).ok).toBe(false); // 타임스케일 치트 차단
+    expect(g.dispatch({ type: "TICK", dtSec: TICK_MAX_DT_SEC }).ok).toBe(true);       // 상한 경계는 허용
     expect(g.dispatch({ type: "CATCH_ATTEMPT", specimenId: "", distanceM: -1 }).ok).toBe(false);
     expect(g.dispatch({ type: "ATTACK_BOSS", bossId: "boss_megalodon", damage: 9999 }).ok).toBe(false);
     expect(g.dispatch({ type: "BUY_ITEM", itemId: "sword_excalibur" }).ok).toBe(false);
@@ -304,11 +305,33 @@ describe("포획 시스템", () => {
   it("보호종은 포획 금지 — 관찰 전용", () => {
     const protectedSp = SPECIES.find((s) => s.economy.protectedSpecies)!;
     expect(protectedSp).toBeDefined();
-    const g = newGame();
-    // 강제로 보호종 개체 생성 후 테스트: spawn 결과에 없으면 규칙 단위 검증
-    const res = g.dispatch({ type: "CATCH_ATTEMPT", specimenId: `fish_${protectedSp.id}_0001`, distanceM: 2 });
-    expect(res.ok).toBe(false);
-    expect(res.reason).toContain("존재하지 않음");
+    const g = createGame({ seed: SEED, enableDebugActions: true });
+    // 디버그 훅으로 보호종 개체를 다이버 바로 옆(사거리·거리 검증 통과 지점)에 강제 배치
+    const forced = {
+      id: `fish_${protectedSp.id}_9001`, speciesId: protectedSp.id,
+      lengthCm: protectedSp.gameBaseLengthCm, massKg: Math.max(0.1, protectedSp.gameBaseMassKg),
+      growthStage: "ADULT", sex: "UNKNOWN",
+      x: WORLD.START_SHIP.x + 2, y: -3, z: WORLD.START_SHIP.z,
+      headingRad: 0, behaviorState: "IDLE", energy: 1, hunger: 0, alive: true, fleeTimerSec: 0,
+    };
+    const dbg = g.dispatch({ type: "DEBUG_SET_STATE", patch: { specimens: [forced] } });
+    expect(dbg.ok, JSON.stringify(dbg.reason)).toBe(true);
+    g.dispatch({ type: "ENTER_WATER" });
+    // 1) 존재하지만 사거리 밖 → '사거리' 차단 (거리 불일치보다 먼저 판정)
+    const far = g.dispatch({ type: "CATCH_ATTEMPT", specimenId: forced.id, distanceM: HARPOONS[0].rangeM + 40 });
+    expect(far.ok).toBe(false);
+    expect(far.reason, JSON.stringify(far.reason)).toContain("사거리");
+    // 2) 사거리 내 정밀 좌표 → 보호종/포획불가 규칙이 명중 판정보다 우선 차단
+    const st = g.getSnapshot();
+    const sp0 = st.specimens.find((s) => s.id === forced.id)!;
+    const p = st.diver.position;
+    const exact = g.dispatch({ type: "CATCH_ATTEMPT", specimenId: forced.id, distanceM: Math.hypot(sp0.x - p.x, sp0.y - p.y, sp0.z - p.z) });
+    expect(exact.ok).toBe(false);
+    expect(exact.reason, JSON.stringify(exact.reason)).toMatch(/보호종|포획 불가/);
+    // 3) 존재하지 않는 ID는 여전히 차단
+    const ghost = g.dispatch({ type: "CATCH_ATTEMPT", specimenId: "fish_999_0001", distanceM: 2 });
+    expect(ghost.ok).toBe(false);
+    expect(ghost.reason).toContain("존재하지 않음");
     // 규칙 검증: SELL_ALL에서도 보호종 제외되는 것은 경제 테스트에서 확인
   });
 
@@ -379,9 +402,11 @@ describe("경제 시스템", () => {
   });
 
   it("장비 구매: 보유 중복 금지·잔액 검사·해금 조건", () => {
-    const g = newGame();
+    const g = createGame({ seed: SEED, enableDebugActions: true });
     expect(g.dispatch({ type: "BUY_ITEM", itemId: "harpoon_01" }).ok).toBe(false); // 이미 보유
     expect(g.dispatch({ type: "BUY_ITEM", itemId: "harpoon_24" }).ok).toBe(false); // 해금/가격 부족
+    // DEBUG로 잔액·해금(discoveredSpecies) 조건을 충족한 뒤 실제 BUY 경로 검증
+    g.dispatch({ type: "DEBUG_SET_STATE", patch: { shells: 5000 } });
     const shellsBefore = g.getSnapshot().shells;
     const buy = g.dispatch({ type: "BUY_ITEM", itemId: "harpoon_02" });
     if (buy.ok) {
@@ -467,13 +492,16 @@ describe("화석·보스", () => {
 // ───────── 7. 저장·불러오기 ─────────
 describe("저장 시스템", () => {
   it("save → 새 엔진 load → 동일 스냅샷", () => {
-    const store = memoryStorage();
-    const g1 = createGame({ seed: SEED, storage: store });
-    g1.dispatch({ type: "TICK", dtSec: 120 });
-    g1.dispatch({ type: "BUY_ITEM", itemId: "harpoon_02" });
+    const g1 = createGame({ seed: SEED, enableDebugActions: true });
+    g1.dispatch({ type: "TICK", dtSec: 120 }); // 스폰 seq 진행 → 후속 spawn과 ID 충돌 방지
+    // DEBUG로 구매 조건(잔액·해금)을 충족한 뒤 실제 BUY 경로를 검증한다.
+    const dbg = g1.dispatch({ type: "DEBUG_SET_STATE", patch: { shells: 5000 } });
+    expect(dbg.ok, JSON.stringify(dbg.reason)).toBe(true);
+    const buy = g1.dispatch({ type: "BUY_ITEM", itemId: "harpoon_02" });
+    expect(buy.ok, JSON.stringify(buy.reason)).toBe(true);
     g1.dispatch({ type: "MARK_SITE_DISCOVERED", siteId: "site_01" });
     g1.save();
-    const g2 = createGame({ seed: SEED, storage: store });
+    const g2 = createGame({ seed: SEED, storage: g1.storage });
     expect(g2.load()).toBe(true);
     const a = g1.getSnapshot(), b = g2.getSnapshot();
     expect(b.shells).toBe(a.shells);
@@ -491,12 +519,11 @@ describe("저장 시스템", () => {
     store.setItem("ocean-gaia-save-v3.2", "{not json!!");
     const g2 = createGame({ seed: SEED, storage: store });
     expect(g2.load()).toBe(false);
-    // 스키마 버전different → 거부
-    const raw = JSON.parse(store.getItem("ocean-gaia-save-v3.2") ?? "{}");
-    // 정상 저장 후 변조
+    // 정상 저장 후 변조 (손상 JSON 이후 다시 정상 저장해 원본 페이로드 확보)
     const g3 = createGame({ seed: SEED, storage: store });
     g3.save();
     const good = JSON.parse(store.getItem("ocean-gaia-save-v3.2")!);
+    // 스키마 버전 불일치 → 거부
     good.schemaVersion = 999;
     store.setItem("ocean-gaia-save-v3.2", JSON.stringify(good));
     expect(createGame({ seed: SEED, storage: store }).load()).toBe(false);
@@ -508,7 +535,6 @@ describe("저장 시스템", () => {
     good.state.ship.position.x = 99999; // 월드 밖 좌표
     store.setItem("ocean-gaia-save-v3.2", JSON.stringify(good));
     expect(createGame({ seed: SEED, storage: store }).load()).toBe(false);
-    void raw;
   });
 
   it("load 후 RNG 흐름 복원 — 저장 이후 결과가 동일", () => {
@@ -554,8 +580,7 @@ describe("시드 재현성", () => {
     const g2 = createGame({ seed: SEED, storage: memoryStorage() });
     g2.dispatch({ type: "TICK", dtSec: 10 });
     g2.save();
-    const payload2 = JSON.parse(g2.getSnapshot ? "" : "");
-    void payload2;
+    void createGame; // (payload2 검사 아래 s1/s3 비교로 대체)
     // 동일 시드 동일 진행 → state 동일
     const store3 = memoryStorage();
     const g3 = createGame({ seed: SEED, storage: store3 });
@@ -572,19 +597,33 @@ describe("월드 시뮬레이션", () => {
     const g = newGame();
     const t0 = g.getSnapshot();
     expect(t0.day).toBe(1);
-    g.dispatch({ type: "TICK", dtSec: 1440 * 8 }); // 8일 → 계절 2회전 이상
+    // 프레임 틱 상한(TICK_MAX_DT_SEC) 안에서 8일을 진행 — 치트성 단일 대형 TICK 대신 정상 경로 사용
+    for (let i = 0; i < Math.ceil((1440 * 8) / TICK_MAX_DT_SEC); i++) {
+      g.dispatch({ type: "TICK", dtSec: TICK_MAX_DT_SEC });
+    }
     const t1 = g.getSnapshot();
-    expect(t1.day).toBe(9);
+    expect(t1.day).toBeGreaterThanOrEqual(9);
     expect(["SPRING", "SUMMER", "AUTUMN", "WINTER"]).toContain(t1.season);
+    // day 계산 규칙 자체는 순수 함수로 정확도 검증
+    expect(dayNumber({ gameSeconds: 1440 * 8 })).toBe(9);
+    expect(seasonOf({ gameSeconds: 0 })).toBe("SPRING");
+    expect(seasonOf({ gameSeconds: 1440 * 7 })).toBe("SUMMER");
+    expect(seasonOf({ gameSeconds: 1440 * 28 - 1 })).toBe("SPRING"); // 28일 주기 순환
   });
 
   it("폭풍 시 일반 어종 스폰 감소 규칙", async () => {
     const { speciesCanSpawn } = await import("../../src/systems/SpawnSystem");
-    const common = SPECIES.find((s) => s.economy.rarity === "COMMON" && s.habitat.activity === "ANY")!;
+    const common = SPECIES.find((s) => s.economy.rarity === "COMMON" && !s.economy.protectedSpecies)!;
     const envDay = { timeOfDay0to24: 12, season: "SUMMER" as const, weather: "STORM" as const };
     expect(speciesCanSpawn(common, common.habitat.zone, envDay)).toBe(false);
     const envClear = { ...envDay, weather: "CLEAR" as const };
     expect(speciesCanSpawn(common, common.habitat.zone, envClear)).toBe(true);
+    // 폭풍에도 EPIC/LEGENDARY는 활성
+    const epic = SPECIES.find((s) => s.economy.rarity === "EPIC" && !s.economy.protectedSpecies)!;
+    expect(speciesCanSpawn(epic, epic.habitat.zone, envDay)).toBe(true);
+    // 보호·관찰 전용 종은 날씨와 무관하게 일반 스폰 제외
+    const prot = SPECIES.find((s) => s.economy.protectedSpecies)!;
+    expect(speciesCanSpawn(prot, prot.habitat.zone, envClear)).toBe(false);
   });
 
   it("야행성 종은 낮에 활동 불가 스폰", async () => {

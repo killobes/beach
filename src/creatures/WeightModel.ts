@@ -7,12 +7,13 @@ import type { LengthWeightRelation, Species } from "../data/speciesTypes";
 import { Rng } from "../core/Rng";
 import { clamp } from "../core/units";
 
-/** W = a * L^b → kg 반환. cm-g 계수는 /1000 변환. */
+/** W = a * L^b → kg 반환. cm-g 계수는 /1000 변환. 최소 0.001kg(1g) — 0/음수 불가 */
 export function lengthToMassKg(lengthCm: number, rel: LengthWeightRelation): number {
   if (lengthCm <= 0) return 0;
   const raw = rel.a * Math.pow(lengthCm, rel.b); // unit 에 따라 g 또는 kg
   const kg = rel.unit === "cm-g" ? raw / 1000 : raw;
-  return kg;
+  if (!Number.isFinite(kg) || kg <= 0) return 0.001;
+  return Math.max(0.001, kg);
 }
 
 /** 게임 생성용 기준 길이 분포: std = 기준 길이의 20%, 절단 정규분포 */

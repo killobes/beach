@@ -17,8 +17,14 @@ export interface SpawnEnv {
 
 const RARITY_WEIGHT = { COMMON: 100, UNCOMMON: 55, RARE: 26, EPIC: 9, LEGENDARY: 3, UNKNOWN: 40 } as const;
 
+/** 보호·관찰 전용 종은 일반 생태 스폰 대상에서 제외한다. (도감 관찰용 개체는 DEBUG 경로로만 배치) */
+export function isPassiveSpawnExcluded(sp: Species): boolean {
+  return sp.economy.protectedSpecies === true;
+}
+
 export function speciesCanSpawn(sp: Species, zoneId: string, env: SpawnEnv): boolean {
   if (sp.habitat.zone !== zoneId) return false;
+  if (isPassiveSpawnExcluded(sp)) return false;
   const isNight = env.timeOfDay0to24 < 6 || env.timeOfDay0to24 >= 20;
   switch (sp.habitat.activity) {
     case "NOCTURNAL": if (!isNight) return false; break;
@@ -65,6 +71,9 @@ export class SpawnSystem {
   }
 
   serialize(): Array<[number, number]> { return [...this.nextSeqBySpecies.entries()]; }
+  /** 저장 시스템 연동: 내부 RNG 상태 직렬화/복원 (재현성 보장) */
+  rngState() { return this.rng.serialize(); }
+  restoreRng(st: ReturnType<Rng["serialize"]>) { this.rng = Rng.restore(st); }
   restore(entries: Array<[number, number]>): void {
     this.nextSeqBySpecies = new Map(entries);
   }

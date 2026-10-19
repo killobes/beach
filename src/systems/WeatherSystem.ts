@@ -24,7 +24,8 @@ export function dayNumber(clock: WorldClock): number {
   return Math.floor(clock.gameSeconds / GAME_SECONDS_PER_DAY) + 1;
 }
 export function seasonOf(clock: WorldClock): Season {
-  const idx = Math.floor(dayNumber(clock) / DAYS_PER_SEASON) % 4;
+  // day 1~7 SPRING, 8~14 SUMMER, 15~21 AUTUMN, 22~28 WINTER → 28일 주기 순환
+  const idx = Math.floor((Math.max(0, dayNumber(clock) - 1)) / DAYS_PER_SEASON) % 4;
   return (["SPRING", "SUMMER", "AUTUMN", "WINTER"] as const)[idx];
 }
 export function isNight(clock: WorldClock): boolean {
@@ -90,6 +91,9 @@ export class WeatherSystem {
   }
 
   serialize() { return { current: this.current, changeTimerSec: this.changeTimerSec, zoneId: this.zoneId }; }
+  /** 저장 시스템 연동: 내부 RNG 상태 직렬화/복원 */
+  rngState() { return this.rng.serialize(); }
+  restoreRng(st: ReturnType<Rng["serialize"]>) { this.rng = Rng.restore(st); }
   restore(d: { current: Weather; changeTimerSec: number; zoneId: string }) {
     this.current = d.current; this.changeTimerSec = d.changeTimerSec; this.zoneId = d.zoneId;
   }
