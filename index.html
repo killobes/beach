@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SpearPals: Blue Harbor — 엔진 플레이 시뮬레이터 (세션 B)</title>
+    <style>
+      /* SpearPals UI 톤: 하늘색/민트/청록 + 샌드 베이지/산호. 둥글고 말랑한 항구 장난감 느낌. */
+      :root {
+        --sky:#7fd4f5; --mint:#8fe3c0; --aqua:#2fb3d8; --sea:#1b7fa8; --deep:#0e4d6b;
+        --sand:#f2e2bd; --coral:#ff9a76; --sun:#ffd166; --ink:#123; --danger:#f08a5d;
+      }
+      * { box-sizing:border-box; margin:0; padding:0; }
+      body { font-family:'Nunito','Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;
+        background:linear-gradient(180deg,#bff0ff 0%,#8fdcf7 30%,#3fb0dd 70%,#1b7fa8 100%);
+        color:var(--ink); min-height:100vh; }
+      header { padding:12px 20px; display:flex; align-items:center; gap:12px;
+        background:rgba(255,255,255,.55); border-bottom:3px solid rgba(255,255,255,.6); backdrop-filter:blur(8px);}
+      header .logo { font-size:22px; font-weight:900; color:var(--deep); letter-spacing:.5px;}
+      header .logo em { font-style:normal; color:var(--coral);}
+      header .badge { font-size:12px; background:var(--mint); color:#0b5d43; padding:4px 12px; border-radius:999px; font-weight:700;}
+      main { display:grid; grid-template-columns:300px 1fr 340px; gap:14px; padding:14px; height:calc(100vh - 58px);}
+      .panel { background:rgba(255,255,255,.72); border:2px solid #fff; border-radius:22px; padding:14px;
+        overflow-y:auto; box-shadow:0 8px 24px rgba(14,77,107,.18); backdrop-filter:blur(8px);}
+      .panel h2 { font-size:13px; color:var(--sea); margin-bottom:10px; letter-spacing:.5px; font-weight:800;}
+      button { background:var(--aqua); color:#fff; border:none; border-radius:999px; padding:8px 14px;
+        cursor:pointer; font-size:13px; font-weight:800; margin:2px; box-shadow:0 3px 0 var(--sea);}
+      button:hover { filter:brightness(1.08);} button:active { transform:translateY(2px); box-shadow:none;}
+      button.coral { background:var(--coral); box-shadow:0 3px 0 #d96a48;}
+      button.sun { background:var(--sun); color:#7a5200; box-shadow:0 3px 0 #d9a92f;}
+      .kv { display:flex; justify-content:space-between; align-items:center; font-size:12.5px; padding:5px 2px;
+        border-bottom:2px dotted #cdeaf7;}
+      .kv b { color:var(--deep); font-weight:800;}
+      #log { font-size:11.5px; line-height:1.6; max-height:200px; overflow-y:auto;
+        background:rgba(255,255,255,.65); border-radius:14px; padding:8px 10px; color:#134;}
+      #catchList > div { display:flex; justify-content:space-between; align-items:center; font-size:12px;
+        padding:6px 8px; border-bottom:2px dotted #cdeaf7;}
+      #worldCanvas { width:100%; height:230px; border-radius:16px; border:3px solid #fff;
+        box-shadow:inset 0 0 20px rgba(14,77,107,.25); background:#0e4d6b;}
+      .hint { font-size:11px; color:#4a7f99; margin-top:6px;}
+      .tag { font-size:10px; padding:2px 8px; border-radius:999px; background:var(--mint); color:#0b5d43; font-weight:800;}
+      .tag.rare { background:var(--sun); color:#7a5200;}
+      .tag.prot { background:var(--coral); color:#fff;}
+      .chiprow { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;}
+      .chip { border-radius:999px; padding:5px 12px; font-size:12px; font-weight:800; cursor:pointer;
+        background:#fff; color:var(--sea); border:2px solid #cdeaf7;}
+      .chip.on { background:var(--aqua); color:#fff; border-color:var(--aqua);}
+      .card { background:#fff; border:2px solid #cdeaf7; border-radius:16px; padding:10px 12px; margin:6px 0;
+        font-size:12px; display:flex; justify-content:space-between; align-items:center; gap:8px;}
+      .card .l { font-weight:800; color:var(--deep);}
+      .card .s { color:#4a7f99; font-size:11px;}
+      .modal-back { position:fixed; inset:0; background:rgba(14,77,107,.45); display:none;
+        align-items:center; justify-content:center; z-index:50; backdrop-filter:blur(3px);}
+      .modal-back.open { display:flex;}
+      .modal { width:min(760px,92vw); max-height:84vh; overflow-y:auto; background:#f6fcff;
+        border:4px solid #fff; border-radius:26px; padding:18px; box-shadow:0 20px 60px rgba(0,0,0,.3);}
+      .modal h2 { color:var(--deep); font-size:17px; margin-bottom:10px;}
+      .closeX { float:right; background:var(--coral); border-radius:999px; width:34px; height:34px;
+        font-size:16px; font-weight:900; color:#fff; border:none; cursor:pointer; box-shadow:0 3px 0 #d96a48;}
+      .tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+      .tile { background:#fff; border:3px solid #cdeaf7; border-radius:20px; padding:16px 10px; text-align:center;
+        cursor:pointer; transition:transform .1s;}
+      .tile:hover { transform:translateY(-3px); border-color:var(--aqua);}
+      .tile .ico { font-size:30px;}
+      .tile .t { font-weight:900; color:var(--deep); margin-top:6px; font-size:14px;}
+      .tile .d { font-size:11px; color:#4a7f99; margin-top:3px;}
+      .tabbar { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;}
+      table.codex { width:100%; border-collapse:separate; border-spacing:0 4px; font-size:12px;}
+      table.codex td { background:#fff; padding:7px 9px; border-top:2px solid #cdeaf7; border-bottom:2px solid #cdeaf7;}
+      table.codex td:first-child { border-left:2px solid #cdeaf7; border-radius:12px 0 0 12px;}
+      table.codex td:last-child { border-right:2px solid #cdeaf7; border-radius:0 12px 12px 0;}
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="logo">🐚 <em>SpearPals</em>: Blue Harbor</span>
+      <span class="badge">세션 B 엔진 · 실제 규칙 동작 검증용 시뮬레이터</span>
+      <span class="badge" id="fps"></span>
+      <span style="flex:1"></span>
+      <span class="badge" id="hudDate">Day 1</span>
+      <span class="badge" id="hudZone">Tropical Reef</span>
+      <span class="badge" id="hudWeather">☀️ Clear</span>
+      <span class="badge" id="hudShells">🐚 50</span>
+      <button class="sun" id="btnHarbor">⚓ Harbor</button>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>조작 (WASD + 단축키)</h2>
+        <div class="kv"><span>출항/정박</span><b>U / K</b></div>
+        <div class="kv"><span>입수/귀선</span><b>E / Q</b></div>
+        <div class="kv"><span>포획(Spear)</span><b>Space</b></div>
+        <div class="kv"><span>관찰(Observe)</span><b>F</b></div>
+        <div class="kv"><span>판매(정박 시)</span><b>V</b></div>
+        <div class="kv"><span>시간 배속</span><b>T (×1→×60→×600)</b></div>
+        <canvas id="worldCanvas"></canvas>
+        <div class="hint">해역 지도 — 배=흰 삼각형, 다이버=노란 점, 물고기=점. 항구 ⌂ 표시.</div>
+        <h2 style="margin-top:14px">상태</h2>
+        <div id="status"></div>
+      </section>
+
+      <section class="panel">
+        <h2>주변 개체 — Observe / Spear 💛</h2>
+        <div id="catchList"></div>
+        <h2 style="margin-top:14px">도감 하이라이트</h2>
+        <div id="codexTop"></div>
+        <h2 style="margin-top:14px">이벤트 로그</h2>
+        <div id="log"></div>
+      </section>
+
+      <section class="panel">
+        <h2>저장 🛟</h2>
+        <button id="btnSave">💾 Save</button>
+        <button id="btnLoad">📂 Load</button>
+        <button id="btnReset" class="coral">초기화</button>
+        <div class="hint" id="saveInfo"></div>
+        <h2 style="margin-top:14px">날씨·시간</h2>
+        <div id="env"></div>
+        <h2 style="margin-top:14px">동료 · 화석</h2>
+        <div id="sideMisc"></div>
+      </section>
+    </main>
+
+    <!-- 항구 허브 모달: 메뉴 6개 고정 -->
+    <div class="modal-back" id="harborBack">
+      <div class="modal">
+        <button class="closeX" data-close="harborBack">✕</button>
+        <h2>⚓ Blue Harbor</h2>
+        <div class="tiles" id="harborTiles"></div>
+      </div>
+    </div>
+
+    <!-- Shop / Upgrades 모달 (탭 4종 카드형) -->
+    <div class="modal-back" id="shopBack">
+      <div class="modal">
+        <button class="closeX" data-close="shopBack">✕</button>
+        <h2>🛒 Shop &amp; Upgrades</h2>
+        <div class="tabbar" id="shopTabs"></div>
+        <div id="shopBody"></div>
+      </div>
+    </div>
+
+    <!-- Sell Catch 모달: 좌 목록 / 우 정산 -->
+    <div class="modal-back" id="sellBack">
+      <div class="modal">
+        <button class="closeX" data-close="sellBack">✕</button>
+        <h2>🐚 Sell Catch</h2>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;">
+          <div id="sellList"></div>
+          <div>
+            <div id="sellTotal"></div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;">
+              <button id="btnSellAll" class="sun">Sell All</button>
+              <button id="btnKeep">Keep</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Codex 모달: 스티커북 + 필터 -->
+    <div class="modal-back" id="codexBack">
+      <div class="modal">
+        <button class="closeX" data-close="codexBack">✕</button>
+        <h2>📖 Codex <small style="font-size:12px;color:#4a7f99" id="codexCount"></small></h2>
+        <div class="chiprow" id="codexFilters"></div>
+        <div id="codexBody"></div>
+      </div>
+    </div>
+
+    <!-- Map 모달: 해역 카드 6장 -->
+    <div class="modal-back" id="mapBack">
+      <div class="modal">
+        <button class="closeX" data-close="mapBack">✕</button>
+        <h2>🗺️ World Map</h2>
+        <div class="tiles" id="mapZones" style="grid-template-columns:repeat(3,1fr)"></div>
+        <div id="mapIslands" style="margin-top:12px;font-size:12px;"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createGame } from '/src/core/GameEngine.js';
+      import { SPEARS, TANKS, SUITS, SHIP_UPGRADES } from '/src/data/equipment.js';
+      import { buildSpecies, ZONES } from '/src/data/species.js';
+      import { ISLANDS, COMPANIONS, BOSSES } from '/src/data/world.js';
+      import { GAME_FULL_TITLE, SAVE_KEY, ZONE_NAMES, WEATHER_LABELS, SEASON_LABELS,
+               timeOfDayLabel, HARBOR_MENU, UPGRADE_TABS, CODEX_FILTERS, RARITY_LABELS, PROMPT, CURRENCY }
+        from '/src/data/brand.js';
+
+      const species = buildSpecies();
+      const byId = new Map(species.map(s => [s.id, s]));
+      const game = createGame({ seed: 12345, storage: {
+        getItem: k => localStorage.getItem(k),
+        setItem: (k, v) => localStorage.setItem(k, v),
+        removeItem: k => localStorage.removeItem(k),
+      }});
+
+      const $ = id => document.getElementById(id);
+      const fmtTime = sec => {
+        const h = Math.floor(sec / 3600) % 24, m = Math.floor(sec / 60) % 60;
+        return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      };
+      function log(msg) {
+        const el = $('log'); const snap = game.getSnapshot();
+        el.innerHTML = `<div>[${fmtTime(snap.timeSec)}] ${msg}</div>` + el.innerHTML;
+        if (el.children.length > 60) el.removeChild(el.lastChild);
+      }
+
+      // ---------- 조작 ----------
+      let timeScale = 1;
+      const keys = {};
+      addEventListener('keydown', e => {
+        if (/^(input|textarea)$/i.test(e.target.tagName)) return;
+        keys[e.key.toLowerCase()] = true;
+        const k = e.key.toLowerCase();
+        if (k === 'u') { const r = game.dispatch({ type: 'UNDOCK' }); log(r.ok ? '출항! ⛵' : '실패: ' + r.reason); }
+        if (k === 'k') { const r = game.dispatch({ type: 'DOCK' }); log(r.ok ? '정박 완료 ⚓' : '실패: ' + r.reason); }
+        if (k === 'e') { const r = game.dispatch({ type: 'ENTER_WATER' }); log(r.ok ? '풍덩! 입수 🫧' : '실패: ' + r.reason); }
+        if (k === 'q') { const r = game.dispatch({ type: 'RETURN_TO_SHIP' }); log(r.ok ? '귀선 🛟' : '실패: ' + r.reason); }
+        if (k === ' ') { tryCatchNearest(); e.preventDefault(); }
+        if (k === 'f') observeNearest();
+        if (k === 'v') sellAllAndLog();
+        if (k === 't') { timeScale = timeScale === 1 ? 60 : timeScale === 60 ? 600 : 1; log('시간 배속 ×' + timeScale); }
+        if (k === 'escape') closeAllModals();
+      });
+      addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+      function nearest() {
+        const dv = game._state.diver, sh = game._state.ship;
+        const x = dv.inWater ? dv.x : sh.x, z = dv.inWater ? dv.z : sh.z, y = dv.inWater ? dv.y : 0;
+        return game.nearby(x, z, y, 400, { sort: 'distance', limit: 1 })[0];
+      }
+      // 텔레포트 금지: 엔진 규칙(MOVE_DIVER)으로 목표 개체까지 단계적 접근
+      function approach(t) {
+        const dv = game._state.diver;
+        for (let i = 0; i < 400; i++) {
+          const dx = t.x - dv.x, dz = t.z - dv.z, dy = Math.abs(t.y) - dv.depthM;
+          if (Math.hypot(dx, dz, dy) < 3.5) return true;
+          const n = Math.hypot(dx, dz) || 1;
+          game.dispatch({ type:'MOVE_DIVER', dx: dx/n, dz: dz/n, dy: dy>0?1:(dy<0?-1:0), dtSec: 0.5 });
+        }
+        return Math.hypot(t.x-dv.x, t.z-dv.z, Math.abs(t.y)-dv.depthM) <= 6;
+      }
+      function tryCatchNearest() {
+        if (!game._state.diver.inWater) { log('포획 실패: 잠수 중이 아니에요 (E로 풍덩 🫧)'); return; }
+        const t = nearest();
+        if (!t) { log('포획 실패: 근처에 물고기가 없어요'); return; }
+        approach(t);
+        const okApproach = approach(t);
+        const r = okApproach ? game.dispatch({ type: 'CATCH_ATTEMPT', specimenId: t.specimenId })
+                             : { ok:false, reason:'물고기에게 너무 멀리 있어요 — 다시 시도!' };
+        const sp = byId.get(t.speciesId);
+        log(r.ok ? `🎯 ${sp.nameKo} 포획! ${t.lengthCm}cm / ${t.weightKg}kg` : `✗ ${sp.nameKo}: ${r.reason}`);
+      }
+      function observeNearest() {
+        const t = nearest();
+        if (!t) { log('관찰 실패: 근처에 물고기가 없어요'); return; }
+        const r = game.dispatch({ type: 'OBSERVE_CREATURE', specimenId: t.specimenId });
+        const sp = byId.get(t.speciesId);
+        log(r.ok ? `👁 ${sp.nameKo} 관찰 💛${r.first ? ` (+${r.reward} ${CURRENCY.ko})` : ''}` : '실패: ' + r.reason);
+      }
+      function sellAllAndLog() {
+        const r = game.dispatch({ type: 'SELL_ALL' });
+        log(r.ok ? `판매 +${r.gained} 🐚` : '실패: ' + r.reason);
+      }
+
+      // ---------- 모달 유틸 ----------
+      function openModal(backId) { $(backId).classList.add('open'); }
+      function closeAllModals() { document.querySelectorAll('.modal-back').forEach(m => m.classList.remove('open')); }
+      document.querySelectorAll('.closeX').forEach(b => b.onclick = () => $(b.dataset.close).classList.remove('open'));
+      document.querySelectorAll('.modal-back').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+      // ---------- 항구 허브 (메뉴 6타일) ----------
+      $('harborTiles').innerHTML = HARBOR_MENU.map(m =>
+        `<div class="tile" data-menu="${m.id}"><div class="ico">${m.icon}</div><div class="t">${m.en}</div><div class="d">${m.desc}</div></div>`).join('');
+      document.querySelectorAll('#harborTiles .tile').forEach(t => t.onclick = () => {
+        const id = t.dataset.menu;
+        closeAllModals();
+        if (id === 'shop' || id === 'upgrades') { openShopTab(id === 'shop' ? 'spear' : 'boat'); openModal('shopBack'); }
+        else if (id === 'sell') { renderSell(); openModal('sellBack'); }
+        else if (id === 'codex') { renderCodex(); openModal('codexBack'); }
+        else if (id === 'map') { renderMap(); openModal('mapBack'); }
+        else if (id === 'rest') { const r = game.save(); log(r.ok ? '휴식 완료 — 저장했어요 🛟' : '저장 실패'); }
+      });
+      $('btnHarbor').onclick = () => openModal('harborBack');
+
+      // ---------- Shop / Upgrades (탭 4종, 카드형) ----------
+      let shopTab = 'spear';
+      $('shopTabs').innerHTML = UPGRADE_TABS.map(t => `<span class="chip" data-tab="${t.id}">${t.icon} ${t.en}</span>`).join('');
+      document.querySelectorAll('#shopTabs .chip').forEach(c => c.onclick = () => openShopTab(c.dataset.tab));
+      function openShopTab(tab) {
+        shopTab = tab;
+        document.querySelectorAll('#shopTabs .chip').forEach(c => c.classList.toggle('on', c.dataset.tab === tab));
+        renderShop();
+      }
+      function card(kind, it, snap) {
+        const ownedKey = kind === 'spear' ? 'ownedSpears' : kind === 'tank' ? 'ownedTanks' : 'ownedSuits';
+        const eqKey = kind === 'spear' ? 'equippedSpear' : kind === 'tank' ? 'equippedTank' : 'equippedSuit';
+        const has = snap.equipment[ownedKey].includes(it.id);
+        const eq = snap.equipment[eqKey] === it.id;
+        let stats = '';
+        if (kind === 'spear') stats = `Range ${it.rangeM}m · Lv+${Math.round(it.stability*10)}%`;
+        if (kind === 'tank') stats = `Air ${it.airCapacity} · Move ×${it.moveMod}`;
+        if (kind === 'suit') stats = `Depth ${it.maxDepthM}m · Move ×${it.moveMod}`;
+        const btn = has ? (eq ? '<b>Equipped ✓</b>' : `<button class="eqBtn sun" data-kind="${kind}" data-id="${it.id}">Equip</button>`)
+                        : `<button class="buyBtn" data-kind="${kind}" data-id="${it.id}">Buy 🐚${it.price}</button>`;
+        return `<div class="card"><div><div class="l">${it.name}</div><div class="s">${stats}</div></div>${btn}</div>`;
+      }
+      function renderShop() {
+        const snap = game.getSnapshot();
+        let html = '';
+        if (shopTab === 'spear') html = SPEARS.map(s => card('spear', s, snap)).join('');
+        if (shopTab === 'tank') html = TANKS.map(t => card('tank', t, snap)).join('');
+        if (shopTab === 'suit') html = SUITS.map(t => card('suit', t, snap)).join('');
+        if (shopTab === 'boat') {
+          html = SHIP_UPGRADES.map(u => {
+            const cur = snap.ship.level >= u.level;
+            return `<div class="card"><div><div class="l">Lv${u.level} ${u.name}</div>
+              <div class="s">Speed ${u.maxSpeedMs}m/s · Hold ${u.holdKg}kg · Survey ${u.survey}${u.unlock?.shells ? ` · 필요 🐚${u.unlock.shells}` : ''}</div></div>
+              ${cur ? '<b>In service ✓</b>' : (snap.ship.level + 1 === u.level ? '<button id="upgBtn" class="sun">Upgrade</button>' : '<span class="s">잠금 🔒</span>')}</div>`;
+          }).join('');
+        }
+        $('shopBody').innerHTML = html;
+        document.querySelectorAll('.buyBtn').forEach(b => b.onclick = () => {
+          const r = game.dispatch({ type: 'BUY_ITEM', kind: b.dataset.kind, itemId: b.dataset.id });
+          log(r.ok ? '구매 성공 🎉' : '구매 실패: ' + r.reason); renderShop();
+        });
+        document.querySelectorAll('.eqBtn').forEach(b => b.onclick = () => {
+          const r = game.dispatch({ type: 'EQUIP_ITEM', kind: b.dataset.kind, itemId: b.dataset.id });
+          log(r.ok ? '장착 완료 ✓' : '실패: ' + r.reason); renderShop();
+        });
+        const up = $('upgBtn'); if (up) up.onclick = () => {
+          const r = game.dispatch({ type: 'UPGRADE_SHIP' }); log(r.ok ? `배가 Lv${r.level}로 성장! ⛵` : '실패: ' + r.reason); renderShop();
+        };
+      }
+
+      // ---------- Sell Catch ----------
+      function renderSell() {
+        const snap = game.getSnapshot();
+        const est = game.estimateSellValue(); // 엔진 단일 소스 (중복 가격 공식 금지)
+        const rows = snap.inventory.map((it, i) => ({ ...it, sp: byId.get(it.speciesId), price: est.values[i] ?? 0 }));
+        $('sellList').innerHTML = rows.length ? rows.map(r =>
+          `<div class="card"><div><div class="l">${r.sp.nameKo} ${RARITY_LABELS[r.sp.rarity].stars}</div>
+           <div class="s">${r.lengthCm}cm · ${r.weightKg}kg</div></div><b>🐚${r.price}</b></div>`).join('')
+          : '<div class="hint">잡은 물고기가 없어요. 바다로 나가서 Spear! 🔱</div>';
+        const total = rows.reduce((a, r) => a + r.price, 0);
+        $('sellTotal').innerHTML =
+          `<div class="card"><div class="l">Total</div><b style="font-size:16px">🐚 ${total}</b></div>
+           <div class="hint">보관 중 ${rows.length}마리 · 창고 ${snap.holdUsedKg.toFixed(1)}/${snap.holdCapacityKg}kg</div>`;
+      }
+      $('btnSellAll').onclick = () => { sellAllAndLog(); renderSell(); };
+      $('btnKeep').onclick = () => { closeAllModals(); log('이번엔 키우는 걸로… 💛'); };
+
+      // ---------- Codex (스티커북) ----------
+      let codexFilter = 'all';
+      $('codexFilters').innerHTML = CODEX_FILTERS.map(f => `<span class="chip" data-f="${f.id}">${f.en}</span>`).join('');
+      document.querySelectorAll('#codexFilters .chip').forEach(c => c.onclick = () => { codexFilter = c.dataset.f; renderCodex(); });
+      function renderCodex() {
+        const snap = game.getSnapshot();
+        document.querySelectorAll('#codexFilters .chip').forEach(c => c.classList.toggle('on', c.dataset.f === codexFilter));
+        let list = species.map(sp => ({ sp, e: snap.codex[sp.id] })).filter(x => x.e);
+        if (codexFilter === 'caught') list = list.filter(x => x.e.catchCount > 0);
+        if (codexFilter === 'observed') list = list.filter(x => x.e.observeCount > 0);
+        if (codexFilter === 'rare') list = list.filter(x => x.sp.rarity >= 4);
+        if (codexFilter === 'region') list = list.filter(x => x.sp.zone === snap.currentZone);
+        const seen = Object.keys(snap.codex).length;
+        $('codexCount').textContent = `발견 ${seen}/200 · 필터 ${list.length}종`;
+        $('codexBody').innerHTML = list.sort((a,b)=>b.e.longestCm-a.e.longestCm).slice(0,40).map(({sp,e}) =>
+          `<table class="codex"><tr>
+            <td><b>${sp.nameKo}</b> <span class="tag ${sp.protected?'prot':(sp.rarity>=4?'rare':'')}">${sp.protected?'Friend 💛':RARITY_LABELS[sp.rarity].stars+' '+RARITY_LABELS[sp.rarity].en}</span><br>
+            <small style="color:#4a7f99">${sp.scientificName}</small></td>
+            <td>${ZONE_NAMES[sp.zone].en}<br><small>${sp.depthMinM}~${sp.depthMaxM}m</small></td>
+            <td>Best: <b>${e.longestCm||'-'}cm</b> / ${e.heaviestKg||'-'}kg<br><small>Catch ${e.catchCount} · Observe ${e.observeCount}</small></td>
+          </tr></table>`).join('') || '<div class="hint">아직 기록이 없어요. 물고기를 관찰하거나 포획해보세요! 👀</div>';
+      }
+
+      // ---------- Map (해역 카드 6장) ----------
+      function renderMap() {
+        const snap = game.getSnapshot();
+        const VIS = { tropical:'High', mangrove:'Low', glacier:'Mid', volcanic:'Mid', open_ocean:'High', deep_sea:'Dark' };
+        const DEPTH = { tropical:'Shallow', mangrove:'Shallow', glacier:'Deep', volcanic:'Mid', open_ocean:'Mid', deep_sea:'Very Deep' };
+        const THREAT = { tropical:'Low', mangrove:'Low', glacier:'Mid', volcanic:'High', open_ocean:'Mid', deep_sea:'High' };
+        $('mapZones').innerHTML = Object.keys(ZONES).map(zk => {
+          const visited = snap.zonesVisited.includes(zk);
+          const cnt = species.filter(s => s.zone === zk).length;
+          return `<div class="tile" style="${visited?'':'opacity:.5'}">
+            <div class="ico">${visited ? (zk===snap.currentZone?'📍':'✅') : '🔒'}</div>
+            <div class="t">${ZONE_NAMES[zk].en}</div>
+            <div class="d">Visibility: ${VIS[zk]}<br>Depth: ${DEPTH[zk]}<br>Threat: ${THREAT[zk]}<br>Species: ${cnt}</div></div>`;
+        }).join('');
+        $('mapIslands').innerHTML = '🏝️ ' + ISLANDS.map(i => `${i.name}${i.harbor?' (Home ⌂)':''}`).join(' · ');
+      }
+
+      // ---------- 지도 렌더 ----------
+      const cv = $('worldCanvas'), ctx = cv.getContext('2d');
+      const ZONE_COLORS = { tropical:'#3fbfae', mangrove:'#a3c585', glacier:'#bcd9ea', volcanic:'#e8a87c', open_ocean:'#6ec6e8', deep_sea:'#2c5f8a' };
+      const ZONE_RECT = { tropical:[400,1400,1800,2600], mangrove:[1800,1400,2800,2600], glacier:[400,200,1800,1400],
+                          volcanic:[2800,200,4400,1400], open_ocean:[1800,200,2800,1400], deep_sea:[2800,1400,4400,2600] };
+      function drawMap(snap) {
+        cv.width = cv.clientWidth * devicePixelRatio; cv.height = cv.clientHeight * devicePixelRatio;
+        ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+        const W = cv.clientWidth, H = cv.clientHeight, sx = W/4800, sy = H/3200;
+        ctx.clearRect(0,0,W,H);
+        for (const [k,b] of Object.entries(ZONE_RECT)) {
+          ctx.fillStyle = ZONE_COLORS[k]; ctx.fillRect(b[0]*sx, b[1]*sy, (b[2]-b[0])*sx, (b[3]-b[1])*sy);
+          ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.font = 'bold 9px Nunito, sans-serif';
+          ctx.fillText(ZONE_NAMES[k].en, b[0]*sx+4, b[1]*sy+11);
+        }
+        for (const s of snap.specimens) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x*sx, s.z*sy, 1.4, 0, 7); ctx.fill(); }
+        for (const isl of ISLANDS) {
+          ctx.fillStyle = '#f7d78a'; ctx.beginPath(); ctx.arc(isl.x*sx, isl.z*sy, 4, 0, 7); ctx.fill();
+          if (isl.harbor) { ctx.fillStyle='#0e4d6b'; ctx.font='bold 11px sans-serif'; ctx.fillText('⌂', isl.x*sx-4, isl.z*sy-6); }
+        }
+        const sh = snap.ship;
+        ctx.save(); ctx.translate(sh.x*sx, sh.z*sy); ctx.rotate(-sh.headingRad);
+        ctx.fillStyle='#fff'; ctx.strokeStyle='#0e4d6b'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(4.5,5); ctx.lineTo(-4.5,5); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+        if (snap.diver.inWater) { ctx.fillStyle='#ffd166'; ctx.beginPath(); ctx.arc(snap.diver.x*sx, snap.diver.z*sy, 3, 0, 7); ctx.fill(); }
+      }
+
+      // ---------- HUD ----------
+      function render(snap) {
+        const hour = (snap.timeSec / 3600) % 24;
+        const tod = timeOfDayLabel(hour);
+        const w = WEATHER_LABELS[snap.weather] || WEATHER_LABELS.clear;
+        $('hudDate').textContent = `Day ${snap.day} · ${tod.icon} ${fmtTime(snap.timeSec)} · ${SEASON_LABELS[snap.season].icon}`;
+        $('hudZone').textContent = ZONE_NAMES[snap.currentZone]?.en ?? snap.currentZone;
+        $('hudWeather').textContent = `${w.icon} ${w.en}`;
+        $('hudShells').textContent = `🐚 ${snap.shells}`;
+
+        const st = $('status');
+        st.innerHTML = [
+          ['위치', `(${Math.round(snap.ship.x)}, ${Math.round(snap.ship.z)})`],
+          ['속도', snap.ship.speedMs.toFixed(1)+' m/s'],
+          ['정박', snap.ship.docked ? '⚓ ✅' : '⛵ 항해중'],
+          ['다이버', snap.diver.inWater ? `수심 ${snap.diver.depthM.toFixed(1)}m` : '선상 🚢'],
+          ['공기', `🫧 ${Math.round(snap.diver.air)}/${snap.diver.maxAir}`],
+          ['창고', `${snap.holdUsedKg.toFixed(1)}/${snap.holdCapacityKg} kg (${snap.inventoryCount}마리)`],
+          ['최대 수심 기록', snap.maxDepthReachedM.toFixed(0)+'m'],
+        ].map(([k,v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('');
+
+        $('env').innerHTML = [
+          ['날짜', `Day ${snap.day} (${SEASON_LABELS[snap.season].en})`],
+          ['시각', fmtTime(snap.timeSec) + ' ' + tod.icon],
+          ['날씨', `${w.icon} ${w.en} / ${w.ko}`],
+          ['배속', '×'+timeScale],
+        ].map(([k,v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('');
+
+        const list = game.nearby(snap.diver.inWater?snap.diver.x:snap.ship.x, snap.diver.inWater?snap.diver.z:snap.ship.z,
+                                 snap.diver.inWater?snap.diver.y:0, 120, { sort:'distance', limit:12 });
+        $('catchList').innerHTML = list.map(n => {
+          const sp = byId.get(n.speciesId);
+          const rl = RARITY_LABELS[sp.rarity];
+          return `<div><span><b>${sp.nameKo}</b> <span class="tag ${sp.protected?'prot':(sp.rarity>=4?'rare':'')}">${sp.protected?'Friend 💛':rl.stars}</span>
+            <small>${n.lengthCm}cm/${n.weightKg}kg · ${n.distanceM}m · ${n.behavior}</small><br>
+            <small style="color:#4a7f99">${PROMPT.observe.en} [F] / ${sp.protected ? PROMPT.protectedNote.en : PROMPT.spear.en + ' [Space]'}</small></span>
+            <button data-sid="${n.specimenId}">Spear 🔱</button></div>`;
+        }).join('') || '<div class="hint">근처 120m 내 물고기 없음 — W/S/A/D로 이동해 보세요!</div>';
+        document.querySelectorAll('#catchList button').forEach(b => b.onclick = () => {
+          if (!game._state.diver.inWater) { log('먼저 E로 풍덩! 🫧'); return; }
+          const t = game._state.specimens.find(s => s.specimenId === b.dataset.sid);
+          if (!t) return;
+          const reached = approach(t);
+          const r = reached ? game.dispatch({ type:'CATCH_ATTEMPT', specimenId:t.specimenId })
+                            : { ok:false, reason:'거리 부족 — 다시 시도!' };
+          const sp = byId.get(t.speciesId);
+          log(r.ok ? `🎯 ${sp.nameKo} 포획!` : `✗ ${r.reason}`);
+        });
+
+        const codexEntries = Object.entries(snap.codex).filter(([,e])=>e.catchCount>0||e.observeCount>0)
+          .sort((a,b)=>(b[1].longestCm-a[1].longestCm)).slice(0,8);
+        $('codexTop').innerHTML = codexEntries.map(([id,e]) => {
+          const sp = byId.get(+id);
+          return `<div class="kv"><span>${sp.nameKo} ${RARITY_LABELS[sp.rarity].stars}</span><b>${e.longestCm}cm · 🎯${e.catchCount} · 👁${e.observeCount}</b></div>`;
+        }).join('') || '<div class="hint">아직 기록 없음</div>';
+
+        $('sideMisc').innerHTML =
+          COMPANIONS.map(c => `<div class="kv"><span>${c.name} (${c.bonus.type})</span><b>${snap.companions[c.id]?'💛 영입됨':'미영입'}</b></div>`).join('') +
+          `<div class="kv"><span>화석 조각</span><b>${Object.values(snap.fossils).filter(v=>v!=null).length}/15</b></div>` +
+          BOSSES.map(b => `<div class="kv"><span>${b.name}</span><b>${snap.bossState[b.id].defeated?'🏆 토벌':(snap.bossState[b.id].summoned?'⚔️ 전투 중':'대기')}</b></div>`).join('');
+
+        drawMap(snap);
+      }
+
+      $('btnSave').onclick = () => { const r = game.save(); log(r.ok ? '저장 완료 🛟' : '실패'); $('saveInfo').textContent = r.ok ? `게임내 시각 ${fmtTime(game.getSnapshot().timeSec)} · key: ${SAVE_KEY}` : ''; };
+      $('btnLoad').onclick = () => { const r = game.load(); log(r.ok ? (r.migrated ? '불러오기 완료 (구 버전 마이그레이션)' : '불러오기 완료') : '실패: ' + r.reason); };
+      $('btnReset').onclick = () => { localStorage.removeItem(SAVE_KEY); localStorage.removeItem('oceangaia.save'); location.reload(); };
+
+      // ---------- 게임 루프 ----------
+      let last = performance.now(), frames = 0, fpsT = last;
+      function loop(now) {
+        const realDt = Math.min(0.1, (now - last) / 1000); last = now;
+        const dt = realDt * timeScale;
+        const fwd = (keys['w']?1:0) - (keys['s']?1:0);
+        const turn = (keys['a']?-1:0) + (keys['d']?1:0);
+        if (game._state.diver.inWater) {
+          const dz = (keys['w']?-1:0)+(keys['s']?1:0), dx=(keys['a']?-1:0)+(keys['d']?1:0);
+          if (dx||dz) game.dispatch({ type:'MOVE_DIVER', dx, dz, dy:0, dtSec: Math.min(1,dt) });
+        } else if (fwd || turn) {
+          game.dispatch({ type:'MOVE_SHIP', forward: fwd, turn, dtSec: Math.min(1, dt) });
+        }
+        game.dispatch({ type: 'TICK', dtSec: dt });
+        render(game.getSnapshot());
+        frames++; if (now - fpsT > 1000) { $('fps').textContent = frames + ' FPS'; frames = 0; fpsT = now; }
+        requestAnimationFrame(loop);
+      }
+      log(`🐚 ${GAME_FULL_TITLE} 시작! U(출항) → W/S/A/D(항해) → E(풍덩) → Space(Spear) → F(Observe) → Q(귀선) → K(정박) → ⚓ Harbor 메뉴`);
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>
