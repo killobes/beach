@@ -11,7 +11,7 @@ import type { Species } from "../data/speciesTypes";
 import { HARPOONS, TANKS, SUITS, SHIP_STAGES, findEquipment, type Harpoon, type Tank, type DiveSuit } from "../data/equipment";
 import { ZONES, ISLANDS, DIVE_SITES, COMPANIONS, BOSSES, FOSSILS, zoneAt } from "../data/world";
 import { SpawnSystem, type SpawnEnv } from "../systems/SpawnSystem";
-import { stepBehavior, listSpecimens, type Specimen, type EnvContext } from "../systems/CreatureBehavior";
+import { stepBehavior, listSpecimens, makeSpecimen, type Specimen, type EnvContext } from "../systems/CreatureBehavior";
 import { WeatherSystem, timeOfDay, seasonOf, isNight, dayNumber, GAME_SECONDS_PER_DAY, type Weather, type Season } from "../systems/WeatherSystem";
 
 /** 프레임 틱 상한(초). 그 이상은 타임스케일 치트로 간주. */
@@ -165,9 +165,40 @@ export function createGame(config: GameConfig): GameInstance {
 
   // 초기 스폰
   reseedWorld();
+
+  /** anchor 주변 개체 수를 target까지 보충. 시간대/날씨 제약으로 풀이 비면 relaxed 조건(낮·CLEAR)으로 완화. */
+  function replenishSpecimens(target: number, anchor?: { x: number; z: number }): void {
+    const a = anchor ?? (state.diver.mode === "ON_SHIP" ? state.ship.position : state.diver.position);
+    const deficit = target - state.specimens.length;
+    if (deficit <= 0) return;
+    let fresh = spawnSys.spawnAround(a.x, a.z, SPECIES, deficit, spawnEnv());
+    if (fresh.length < deficit) {
+      const relaxed = spawnSys.spawnAround(a.x, a.z, SPECIES, deficit - fresh.length, {
+        timeOfDay0to24: 12, season: state.season, weather: "CLEAR",
+      });
+      fresh = fresh.concat(relaxed);
+    }
+    if (fresh.length < deficit) {
+      // 해역에 스폰 가능 종이 전혀 없는 극단 경우: 해당 좌표 해역의 모든 비보호종에서 강제 스폰
+      const forced = spawnSys.spawnForcedAny(a.x, a.z, SPECIES, deficit - fresh.length);
+      fresh = fresh.concat(forced);
+    }
+    state.specimens.push(...fresh);
+  }
+
   function reseedWorld() {
     const env = spawnEnv();
     state.specimens = spawnSys.spawnAround(state.ship.position.x, state.ship.position.z, SPECIES, 40, env);
+  }
+
+  /** 보호·관찰 전용 종 개체를 지정 좌표 해역에 강제 배치 후 생성된 Specimen 반환 (도감 관찰 경로 전용) */
+  function spawnForcedPassive(speciesId: number, x: number, z: number): Specimen | null {
+    const sp = getSpeciesById(speciesId);
+    if (!sp || !sp.economy.protectedSpecies) return null;
+    const spec = spawnSys.spawnPassiveOne(sp, x, z);
+    if (!spec) return null;
+    state.specimens.push(spec);
+    return spec;
   }
 
   function spawnEnv(): SpawnEnv {
@@ -200,7 +231,10 @@ export function createGame(config: GameConfig): GameInstance {
         if (state.diver.mode !== "ON_SHIP") return fail("잠수 중에는 배를 움직일 수 없음");
         const fwd = clamp(num(action.forward, "forward") ?? 0, -1, 1);
         const turn = clamp(num(action.turn, "turn") ?? 0, -1, 1);
-        const dt = clamp(num(action.dtSec, "dtSec") ?? 1 / 60, 0, 1);
+        // dtSec 미제공 시 60fps 기본 프레임. 상한은 TICK_MAX_DT_SEC와 동일(타임스케일 치트 차단).
+        const rawDt = num(action.dtSec, "dtSec") ?? 1 / 60;
+        if (rawDt === null || rawDt < 0 || rawDt > TICK_MAX_DT_SEC) return fail(`MOVE_SHIP dtSec는 0~${TICK_MAX_DT_SEC}초`);
+        const dt = rawDt;
         moveShip(fwd, turn, dt);
         emit(); // A팀 스냅샷 구독 갱신 (선박 위치 시각화)
         return ok({ position: { ...state.ship.position }, headingRad: state.ship.headingRad, speedMs: state.ship.speedMs });
@@ -214,6 +248,8 @@ export function createGame(config: GameConfig): GameInstance {
         state.diver.position = { x: state.ship.position.x, y: -1, z: state.ship.position.z };
         state.diver.airCurrent = currentTank().airCapacity;
         state.diver.airMax = currentTank().airCapacity;
+        // 입수 시 주변 생태 군집 갱신 — 관찰·포획 대상이 항상 존재하도록 보장
+        replenishSpecimens(40);
         pushLog("입수");
         emit();
         return ok();
@@ -290,7 +326,16 @@ export function createGame(config: GameConfig): GameInstance {
         return handleCatch(String(action.specimenId ?? ""), num(action.distanceM, "distanceM"));
       }
       case "OBSERVE_CREATURE": {
-        const spec = state.specimens.find((sp) => sp.id === action.specimenId);
+        let spec = state.specimens.find((sp) => sp.id === action.specimenId);
+        if (!spec) {
+          // DEBUG 전용 경로: 보호·관찰 종 개체를 강제로 주변에 배치 후 관찰 처리 (테스트/도감 검증용)
+          const dbg = (action as unknown as { __debugForceSpeciesId?: number }).__debugForceSpeciesId;
+          if (config.enableDebugActions && typeof dbg === "number") {
+            const a = state.diver.mode === "ON_SHIP" ? state.ship.position : state.diver.position;
+            const forced = spawnForcedPassive(dbg, a.x, a.z);
+            if (forced) spec = forced;
+          }
+        }
         if (!spec) return fail("관찰 대상 개체가 존재하지 않음");
         const entry = ensureDex(spec.speciesId);
         entry.observeCount += 1;
@@ -503,21 +548,25 @@ export function createGame(config: GameConfig): GameInstance {
     const spec = state.specimens.find((s) => s.id === specimenId && s.alive);
     if (!spec) return fail("대상 개체가 존재하지 않음 (ID 불일치)");
     const harp = currentHarpoon();
-    // 1) 장비 사거리 판정 — 선언된 거리가 사거리 밖이면 좌표 검증보다 먼저 차단
+    // 1) 장비 사거리 판정 — A가 선언한 거리가 사거리 밖이면 좌표 검증보다 먼저 차단 (계약: distanceM 기준)
     if (distanceM > harp.rangeM) return fail(`사거리 초과 (${harp.rangeM}m)`);
-    // 2) 실제 거리 검증: 다이버 ↔ 개체 3D 거리와 A가 전달한 거리의 오차 허용 (치트 방지)
+    // 2) 실제 거리 검증: 다이버 ↔ 개체 3D 거리와 A가 전달한 거리의 오차 허용 (치트 방지).
+    //    명중 판정은 실측 기준으로 하되, 오차 한계(6m) 이내의 원거리 표적은 작살이 빗나간다.
     const real = Math.hypot(spec.x - state.diver.position.x, spec.y - state.diver.position.y, spec.z - state.diver.position.z);
     if (Math.abs(real - distanceM) > 6) return fail(`거리 불일치 (실측 ${Math.round(real)}m) — 치트/오적용 방지`);
     // 어업 규칙: 작살은 수면 아래에서 발사한다. 표적이 수면 위면 명중 판정 대상이 아님
-    if (real <= harp.rangeM && spec.y >= 0 && state.diver.position.y >= 0) return fail("빗나감 (수면 위 표적 — 입수 후 발사)");
+    if (spec.y >= 0 && state.diver.position.y >= 0) return fail("빗나감 (수면 위 표적 — 입수 후 발사)");
+    // 원거리 한계: 실측 기준 사거리를 벗어난 표적(선언값 오차 범위 내라도)은 작살이 도달하지 못해 빗나간다
+    if (real > harp.rangeM) { emit(); return fail(`작살 빗나감 (실거리 ${Math.round(real * 10) / 10}m > 유효 사거리 ${harp.rangeM}m)`); }
     // 3) 종 규칙: 보호종/포획불가는 정밀 검증 통과 후 최종 차단 (변조 입력으로도 우회 불가)
     const sp = getSpeciesById(spec.speciesId)!;
     if (sp.economy.protectedSpecies) return fail("보호종 — 포획 금지 (관찰 전용)");
     if (!sp.economy.catchable) return fail("포획 불가 종");
     // 명중 판정: 안정성 + 거리 페널티 + 도피 페널티 + 깊은 수심 페널티(장비 난이도 반영)
     const depthPenalty = state.diver.depthM > 200 ? 0.85 : 1;
+    // 근접(실측 0m)이면 장비 안정성이 곧 명중률 — 원거리로 갈수록 급감 (distanceM 선언값 아닌 실측 기준)
     const hitProb = clamp(
-      harp.stability * (1 - distanceM / (harp.rangeM + 4)) * (spec.behaviorState === "FLEEING" ? 0.55 : 1) * depthPenalty,
+      harp.stability * (1 - real / (harp.rangeM + 4)) * (spec.behaviorState === "FLEEING" ? 0.55 : 1) * depthPenalty,
       0.05, 0.98);
     if (!rng.chance(hitProb)) { emit(); return fail("작살 빗나감"); }
     // 성공 처리 — 단, 창고 용량 초과 시 물고기는 살아있고 보상도 없다(유령 포획 방지)
@@ -619,19 +668,7 @@ export function createGame(config: GameConfig): GameInstance {
     const cullR = shipNearAnchor ? 500 : 260;
     state.specimens = state.specimens.filter((s) => Math.hypot(s.x - anchor.x, s.z - anchor.z) < cullR);
     // 개체 수 유지: 부족분을 즉시 보충 (어종 풀이 시간대/날씨로 일시 공백이어도 최소 1마리 이상 유지)
-    const deficit = 40 - state.specimens.length;
-    if (deficit > 0) {
-      // 생태 유지: 부족분을 즉시 보충. 시간대/날씨 제약으로 출현 가능 종이 없으면
-      // 낮·CLEAR 조건으로 완화하여 최소 개체 수를 보장 (완화 스폰은 seq/RNG 흐름 동일 규칙 사용)
-      let fresh = spawnSys.spawnAround(anchor.x, anchor.z, SPECIES, deficit, spawnEnv());
-      if (fresh.length < deficit) {
-        const relaxed = spawnSys.spawnAround(anchor.x, anchor.z, SPECIES, deficit - fresh.length, {
-          timeOfDay0to24: 12, season: state.season, weather: "CLEAR",
-        });
-        fresh = fresh.concat(relaxed);
-      }
-      state.specimens.push(...fresh);
-    }
+    replenishSpecimens(40);
     // 화석 재출현 (게임 시간 기반)
     for (const f of state.fossils) {
       if (!f.collected && state.gameSeconds >= f.nextRespawnGameSec && f.nextRespawnGameSec > 0) {

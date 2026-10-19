@@ -8,6 +8,7 @@ import { SPECIES, getSpeciesById, ZONE_QUOTA } from "../../src/data/species";
 import { HARPOONS, TANKS, SUITS, SHIP_STAGES } from "../../src/data/equipment";
 import { ZONES, ISLANDS, DIVE_SITES, BOSSES, FOSSILS, COMPANIONS, zoneAt } from "../../src/data/world";
 import { WORLD, ACTIONS, SAVE_SCHEMA_VERSION } from "../../src/core/units";
+import { dayNumber, seasonOf } from "../../src/systems/WeatherSystem";
 import { lengthToMassKg, rollSpecimenSize } from "../../src/creatures/WeightModel";
 import { Rng } from "../../src/core/Rng";
 
@@ -188,8 +189,16 @@ describe("게임 엔진 기본", () => {
   });
 
   it("MOVE_SHIP: 전방 이동·월드 경계·섬 충돌·해역 티어 제한", () => {
-    const g = newGame();
+    // 시작 좌표(755,1780)는 산호항 반경 90m 이내 — 항구에서 정박 해제하듯 먼저 빠져나온 뒤 전진 검증을 수행한다.
+    const g = createGame({ seed: SEED, startGameSeconds: 8 * 60 + 3600 }); // 오전 11시(낮)로 폭풍/야간 확률 변수 제거
     const before = g.getSnapshot().ship.position;
+    let cleared = false;
+    for (let i = 0; i < 400 && !cleared; i++) {
+      g.dispatch({ type: "MOVE_SHIP", forward: 1, turn: 0, dtSec: 1 / 30 });
+      const p = g.getSnapshot().ship.position;
+      cleared = Math.hypot(p.x - 755, p.z - 1780) > 95;
+    }
+    expect(cleared, "산호항 반경 이탈 실패").toBe(true);
     for (let i = 0; i < 60; i++) g.dispatch({ type: "MOVE_SHIP", forward: 1, turn: 0, dtSec: 1 / 30 });
     const after = g.getSnapshot().ship.position;
     expect(Math.hypot(after.x - before.x, after.z - before.z)).toBeGreaterThan(1);
@@ -280,15 +289,16 @@ describe("포획 시스템", () => {
     expect(dist).toBeGreaterThanOrEqual(0);
     // 시도 횟수 제한 없이 명중할 때까지 (실패 사유는 '빗나감'만 허용)
     let caught = false;
-    for (let i = 0; i < 30 && !caught; i++) {
+    for (let i = 0; i < 60 && !caught; i++) {
       const st = g.getSnapshot();
       const cur = st.specimens.find((s) => s.id === target.id);
       if (!cur) break;
-      const p = st.diver.position;
+      if (st.diver.mode === "ON_SHIP") g.dispatch({ type: "ENTER_WATER" }); // 공기 고갈 자동 귀선 시 재입수
+      const p = g.getSnapshot().diver.position;
       const d = Math.hypot(cur.x - p.x, cur.y - p.y, cur.z - p.z);
       const r = g.dispatch({ type: "CATCH_ATTEMPT", specimenId: target.id, distanceM: d });
       if (r.ok) caught = true;
-      else expect(r.reason).toContain("빗나감");
+      else expect(r.reason, `시도 ${i}`).toContain("빗나감");
     }
     expect(caught).toBe(true);
     const st = g.getSnapshot();
@@ -434,7 +444,8 @@ describe("경제 시스템", () => {
   });
 
   it("관찰 보상 · 도감 관찰 횟수 갱신", () => {
-    const g = newGame();
+    // 저장 경로를 격리 메모리 스토리지로 지정 — 다른 테스트의 save()와 상호 오염 방지
+    const g = createGame({ seed: SEED, storage: memoryStorage() });
     const target = g.getSnapshot().specimens[0];
     const before = g.getSnapshot().shells;
     const res = g.dispatch({ type: "OBSERVE_CREATURE", specimenId: target.id });
@@ -495,7 +506,14 @@ describe("저장 시스템", () => {
     const g1 = createGame({ seed: SEED, enableDebugActions: true });
     g1.dispatch({ type: "TICK", dtSec: 120 }); // 스폰 seq 진행 → 후속 spawn과 ID 충돌 방지
     // DEBUG로 구매 조건(잔액·해금)을 충족한 뒤 실제 BUY 경로를 검증한다.
-    const dbg = g1.dispatch({ type: "DEBUG_SET_STATE", patch: { shells: 5000 } });
+    // harpoon_02 해금(discoveredSpecies 6)을 충족하되, 실제 BUY_ITEM 경로를 검증한다.
+    const dbg = g1.dispatch({ type: "DEBUG_SET_STATE", patch: {
+      shells: 5000,
+      dex: Object.fromEntries([1, 3, 6, 10, 29, 40].map((id) => [id, {
+        firstDiscovered: true, firstCaught: false, catchCount: 0, observeCount: 0,
+        maxLengthCm: 0, maxLengthMassKg: 0, maxMassKg: 0, maxMassLengthCm: 0, discoveredZones: ["tropical"],
+      }])),
+    } });
     expect(dbg.ok, JSON.stringify(dbg.reason)).toBe(true);
     const buy = g1.dispatch({ type: "BUY_ITEM", itemId: "harpoon_02" });
     expect(buy.ok, JSON.stringify(buy.reason)).toBe(true);

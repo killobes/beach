@@ -59,6 +59,35 @@ export class SpawnSystem {
     return out;
   }
 
+  /** 해역·시간대·날씨 제약 없이 해당 좌표 해역의 비보호종에서 강제 스폰 (최소 개체 수 보장용) */
+  spawnForcedAny(x: number, z: number, allSpecies: Species[], count: number): Specimen[] {
+    const zone = zoneAt(x, z);
+    if (!zone || count <= 0) return [];
+    const pool = allSpecies.filter((sp) => sp.habitat.zone === zone.id && !isPassiveSpawnExcluded(sp));
+    if (pool.length === 0) return [];
+    const out: Specimen[] = [];
+    for (let i = 0; i < count; i++) {
+      const sp = this.weightedPick(pool);
+      const seq = (this.nextSeqBySpecies.get(sp.id) ?? 0) + 1;
+      this.nextSeqBySpecies.set(sp.id, seq);
+      const bounds = { xMin: zone.bounds.xMin, xMax: zone.bounds.xMax, zMin: zone.bounds.zMin, zMax: zone.bounds.zMax };
+      out.push(makeSpecimen(sp, seq, this.rng, bounds));
+    }
+    return out;
+  }
+
+  /** 보호·관찰 전용 종 1개체를 지정 좌표 근처에 강제 생성 (DEBUG/도감 관찰 경로 전용) */
+  spawnPassiveOne(sp: Species, x: number, z: number): Specimen | null {
+    if (!isPassiveSpawnExcluded(sp)) return null; // 보호종만 허용
+    const zone = zoneAt(x, z);
+    const bounds = zone
+      ? { xMin: Math.max(zone.bounds.xMin, x - 60), xMax: Math.min(zone.bounds.xMax, x + 60), zMin: Math.max(zone.bounds.zMin, z - 60), zMax: Math.min(zone.bounds.zMax, z + 60) }
+      : { xMin: x - 60, xMax: x + 60, zMin: z - 60, zMax: z + 60 };
+    const seq = (this.nextSeqBySpecies.get(sp.id) ?? 0) + 1;
+    this.nextSeqBySpecies.set(sp.id, seq);
+    return makeSpecimen(sp, seq, this.rng, bounds);
+  }
+
   private weightedPick(pool: Species[]): Species {
     let total = 0;
     for (const s of pool) total += RARITY_WEIGHT[s.economy.rarity];
