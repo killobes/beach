@@ -1,0 +1,4002 @@
+[
+ {
+  "id": 1,
+  "zone": "tropical",
+  "ko": "흰동가리",
+  "en": "Orange clownfish",
+  "sci": "Amphiprion ocellaris",
+  "sub": "CORAL",
+  "mx": 11.0,
+  "base": 8.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 2,
+  "zone": "tropical",
+  "ko": "블루탱",
+  "en": "Regal tang",
+  "sci": "Paracanthurus hepatus",
+  "sub": "CORAL",
+  "mx": 31.0,
+  "base": 25.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 3,
+  "zone": "tropical",
+  "ko": "옐로우탱",
+  "en": "Yellow tang",
+  "sci": "Zebrasoma flavescens",
+  "sub": "CORAL",
+  "mx": 20.0,
+  "base": 16.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 4,
+  "zone": "tropical",
+  "ko": "브라운탱",
+  "en": "Brown surgeonfish",
+  "sci": "Acanthurus nigrofuscus",
+  "sub": "CORAL",
+  "mx": 21.0,
+  "base": 15.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 5,
+  "zone": "tropical",
+  "ko": "유니콘피시",
+  "en": "Bluespine unicornfish",
+  "sci": "Naso unicornis",
+  "sub": "CORAL",
+  "mx": 90.0,
+  "base": 55.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 6,
+  "zone": "tropical",
+  "ko": "나폴레온피시",
+  "en": "Humphead wrasse",
+  "sci": "Cheilinus undulatus",
+  "sub": "CORAL",
+  "mx": 230.0,
+  "base": 150.0,
+  "rar": "EPIC",
+  "prot": true,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 7,
+  "zone": "tropical",
+  "ko": "레드리프앵무물고기",
+  "en": "Redlip parrotfish",
+  "sci": "Scarus frenatus",
+  "sub": "CORAL",
+  "mx": 50.0,
+  "base": 38.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 8,
+  "zone": "tropical",
+  "ko": "토마토클라운",
+  "en": "Tomato clownfish",
+  "sci": "Amphiprion frenatus",
+  "sub": "CORAL",
+  "mx": 12.0,
+  "base": 9.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 9,
+  "zone": "tropical",
+  "ko": "클락클라운",
+  "en": "Clark's anemonefish",
+  "sci": "Amphiprion clarkii",
+  "sub": "CORAL",
+  "mx": 14.0,
+  "base": 10.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 10,
+  "zone": "tropical",
+  "ko": "새들백클라운",
+  "en": "Saddleback anemonefish",
+  "sci": "Amphiprion polymnus",
+  "sub": "CORAL",
+  "mx": 13.0,
+  "base": 10.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 11,
+  "zone": "tropical",
+  "ko": "퍼플클라운",
+  "en": "Purple anemonefish",
+  "sci": "Amphiprion purpureus",
+  "sub": "CORAL",
+  "mx": 12.0,
+  "base": 9.0,
+  "rar": "RARE",
+  "prot": true,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 12,
+  "zone": "tropical",
+  "ko": "사자물고기",
+  "en": "Red lionfish",
+  "sci": "Pterois volitans",
+  "sub": "CORAL",
+  "mx": 38.0,
+  "base": 25.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 13,
+  "zone": "tropical",
+  "ko": "만다린피쉬",
+  "en": "Mandarinfish",
+  "sci": "Synchiropus splendidus",
+  "sub": "ROCK",
+  "mx": 6.0,
+  "base": 4.5,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 14,
+  "zone": "tropical",
+  "ko": "퀸앵젤",
+  "en": "Queen angelfish",
+  "sci": "Holacanthus ciliaris",
+  "sub": "CORAL",
+  "mx": 45.0,
+  "base": 33.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 15,
+  "zone": "tropical",
+  "ko": "킹앵젤",
+  "en": "King angelfish",
+  "sci": "Holacanthus passer",
+  "sub": "CORAL",
+  "mx": 35.0,
+  "base": 26.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 16,
+  "zone": "tropical",
+  "ko": "플레임앵젤",
+  "en": "Flame angelfish",
+  "sci": "Centropyge loricula",
+  "sub": "CORAL",
+  "mx": 15.0,
+  "base": 11.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 17,
+  "zone": "tropical",
+  "ko": "코랄뷰티",
+  "en": "Coral beauty",
+  "sci": "Centropyge bispinosa",
+  "sub": "CORAL",
+  "mx": 10.0,
+  "base": 7.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 18,
+  "zone": "tropical",
+  "ko": "여울나비치어",
+  "en": "Lineated butterflyfish",
+  "sci": "Chaetodon lineolatus",
+  "sub": "CORAL",
+  "mx": 20.0,
+  "base": 15.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 19,
+  "zone": "tropical",
+  "ko": "쿠퍼밴드나비치어",
+  "en": "Copperband butterflyfish",
+  "sci": "Chaetodon modestus",
+  "sub": "CORAL",
+  "mx": 15.0,
+  "base": 11.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 20,
+  "zone": "tropical",
+  "ko": "반달나비치어",
+  "en": "Moon butterflyfish",
+  "sci": "Chaetodon lunula",
+  "sub": "CORAL",
+  "mx": 20.0,
+  "base": 15.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 21,
+  "zone": "tropical",
+  "ko": "펜넌트피시",
+  "en": "Longfin bannerfish",
+  "sci": "Heniochus acuminatus",
+  "sub": "CORAL",
+  "mx": 25.0,
+  "base": 19.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 22,
+  "zone": "tropical",
+  "ko": "그린크로미스",
+  "en": "Blue-green chromis",
+  "sci": "Chromis viridis",
+  "sub": "CORAL",
+  "mx": 9.0,
+  "base": 7.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 23,
+  "zone": "tropical",
+  "ko": "도미노댐셀",
+  "en": "Domino damselfish",
+  "sci": "Dascyllus trimaculatus",
+  "sub": "CORAL",
+  "mx": 14.0,
+  "base": 10.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 24,
+  "zone": "tropical",
+  "ko": "바이컬러댐셀",
+  "en": "Bicolor damselfish",
+  "sci": "Stegastes bicolor",
+  "sub": "CORAL",
+  "mx": 10.0,
+  "base": 7.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 25,
+  "zone": "tropical",
+  "ko": "옐로우고etil",
+  "en": "Yellowfin goatfish",
+  "sci": "Mulloidichthys vanicolensis",
+  "sub": "SAND",
+  "mx": 30.0,
+  "base": 22.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 26,
+  "zone": "tropical",
+  "ko": "블레스너퍼",
+  "en": "Bluestripe snapper",
+  "sci": "Lutjanus kasmira",
+  "sub": "CORAL",
+  "mx": 40.0,
+  "base": 30.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 27,
+  "zone": "tropical",
+  "ko": "예로우테일스너퍼",
+  "en": "Yellowtail snapper",
+  "sci": "Ocyurus chrysurus",
+  "sub": "CORAL",
+  "mx": 85.0,
+  "base": 55.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 28,
+  "zone": "tropical",
+  "ko": "자이언트그루퍼",
+  "en": "Giant grouper",
+  "sci": "Epinephelus lanceolatus",
+  "sub": "CORAL",
+  "mx": 270.0,
+  "base": 180.0,
+  "rar": "LEGENDARY",
+  "prot": true,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 29,
+  "zone": "tropical",
+  "ko": "코랄하인드",
+  "en": "Coral hind",
+  "sci": "Cephalopholis miniata",
+  "sub": "CORAL",
+  "mx": 45.0,
+  "base": 32.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 30,
+  "zone": "tropical",
+  "ko": "아르구스하인드",
+  "en": "Argus grouper",
+  "sci": "Cephalopholis argus",
+  "sub": "CORAL",
+  "mx": 55.0,
+  "base": 38.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 31,
+  "zone": "tropical",
+  "ko": "크림슨스너퍼",
+  "en": "Crimson snapper",
+  "sci": "Lutjanus erythropterus",
+  "sub": "CORAL",
+  "mx": 50.0,
+  "base": 35.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 32,
+  "zone": "tropical",
+  "ko": "롱핀래빗피시",
+  "en": "Longfin rabbitfish",
+  "sci": "Siganus vermiculatus",
+  "sub": "CORAL",
+  "mx": 45.0,
+  "base": 32.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 33,
+  "zone": "tropical",
+  "ko": "스파이니래빗피시",
+  "en": "Spiny rabbitfish",
+  "sci": "Siganus spinus",
+  "sub": "CORAL",
+  "mx": 30.0,
+  "base": 21.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 34,
+  "zone": "tropical",
+  "ko": "화이트사이드서전",
+  "en": "Whiteside surgeon",
+  "sci": "Acanthurus nigroris",
+  "sub": "CORAL",
+  "mx": 35.0,
+  "base": 25.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 35,
+  "zone": "tropical",
+  "ko": "더스키서전",
+  "en": "Twotone surgeon",
+  "sci": "Acanthurus dussumieri",
+  "sub": "CORAL",
+  "mx": 30.0,
+  "base": 22.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 36,
+  "zone": "tropical",
+  "ko": "오렌지스파인유니콘",
+  "en": "Orangespine unicornfish",
+  "sci": "Naso lituratus",
+  "sub": "CORAL",
+  "mx": 45.0,
+  "base": 32.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 37,
+  "zone": "tropical",
+  "ko": "화이트그런트",
+  "en": "White grunt",
+  "sci": "Haemulon plumierii",
+  "sub": "CORAL",
+  "mx": 40.0,
+  "base": 27.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 38,
+  "zone": "tropical",
+  "ko": "예로우헤드라스",
+  "en": "Clown wrasse",
+  "sci": "Coris aygula",
+  "sub": "CORAL",
+  "mx": 40.0,
+  "base": 28.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 39,
+  "zone": "tropical",
+  "ko": "보라색도미",
+  "en": "Coral trout",
+  "sci": "Variola louti",
+  "sub": "CORAL",
+  "mx": 85.0,
+  "base": 55.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 40,
+  "zone": "tropical",
+  "ko": "예로우잭",
+  "en": "Yellow jack",
+  "sci": "Caranx bartholomaei",
+  "sub": "OPEN_WATER",
+  "mx": 85.0,
+  "base": 55.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   35
+  ],
+  "temp": [
+   24,
+   30
+  ]
+ },
+ {
+  "id": 41,
+  "zone": "glacial",
+  "ko": "대서양대구",
+  "en": "Atlantic cod",
+  "sci": "Gadus morhua",
+  "sub": "ROCK",
+  "mx": 200.0,
+  "base": 110.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 42,
+  "zone": "glacial",
+  "ko": "북극대구",
+  "en": "Arctic cod",
+  "sci": "Boreogadus saida",
+  "sub": "ICE",
+  "mx": 40.0,
+  "base": 26.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 43,
+  "zone": "glacial",
+  "ko": "캐플린",
+  "en": "Capelin",
+  "sci": "Mallotus villosus",
+  "sub": "OPEN_WATER",
+  "mx": 24.0,
+  "base": 16.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 44,
+  "zone": "glacial",
+  "ko": "블루휘팅",
+  "en": "Blue whiting",
+  "sci": "Micromesistius poutassou",
+  "sub": "OPEN_WATER",
+  "mx": 50.0,
+  "base": 34.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 45,
+  "zone": "glacial",
+  "ko": "패타고니아투스피시",
+  "en": "Patagonian toothfish",
+  "sci": "Dissostichus eleginoides",
+  "sub": "ROCK",
+  "mx": 210.0,
+  "base": 140.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 46,
+  "zone": "glacial",
+  "ko": "로스투스피시",
+  "en": "Ross toothfish",
+  "sci": "Notothenia rossii",
+  "sub": "ROCK",
+  "mx": 85.0,
+  "base": 55.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 47,
+  "zone": "glacial",
+  "ko": "니스테디아",
+  "en": "Marbled rockcod",
+  "sci": "Notothenia corlicops",
+  "sub": "ROCK",
+  "mx": 90.0,
+  "base": 60.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 48,
+  "zone": "glacial",
+  "ko": "블랙핀아이스피시",
+  "en": "Blackfin icefish",
+  "sci": "Pagothenia borchgrevinki",
+  "sub": "ICE",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 49,
+  "zone": "glacial",
+  "ko": "챔포세팔루스",
+  "en": "Southern ocean cod",
+  "sci": "Champsocephalus gunnari",
+  "sub": "OPEN_WATER",
+  "mx": 55.0,
+  "base": 38.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 50,
+  "zone": "glacial",
+  "ko": "켈프그린링",
+  "en": "Kelp greenling",
+  "sci": "Hexagrammos decagrammus",
+  "sub": "KELP",
+  "mx": 60.0,
+  "base": 40.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 51,
+  "zone": "glacial",
+  "ko": "알래스카폴록",
+  "en": "Walleye pollock",
+  "sci": "Gadus chalcogrammus",
+  "sub": "OPEN_WATER",
+  "mx": 90.0,
+  "base": 60.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 52,
+  "zone": "glacial",
+  "ko": "태평양청어",
+  "en": "Pacific herring",
+  "sci": "Clupea pallasii",
+  "sub": "OPEN_WATER",
+  "mx": 45.0,
+  "base": 30.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 53,
+  "zone": "glacial",
+  "ko": "참연어",
+  "en": "Chinook salmon",
+  "sci": "Oncorhynchus tshawytscha",
+  "sub": "OPEN_WATER",
+  "mx": 150.0,
+  "base": 95.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 54,
+  "zone": "glacial",
+  "ko": "코호연어",
+  "en": "Coho salmon",
+  "sci": "Oncorhynchus kisutch",
+  "sub": "OPEN_WATER",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 55,
+  "zone": "glacial",
+  "ko": "핑크연어",
+  "en": "Pink salmon",
+  "sci": "Oncorhynchus gorischa",
+  "sub": "OPEN_WATER",
+  "mx": 70.0,
+  "base": 45.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 56,
+  "zone": "glacial",
+  "ko": "소키연어",
+  "en": "Sockeye salmon",
+  "sci": "Oncorhynchus nerka",
+  "sub": "OPEN_WATER",
+  "mx": 80.0,
+  "base": 52.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 57,
+  "zone": "glacial",
+  "ko": "브라운송어",
+  "en": "Brown trout",
+  "sci": "Salmo trutta",
+  "sub": "ROCK",
+  "mx": 100.0,
+  "base": 60.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 58,
+  "zone": "glacial",
+  "ko": "북극산char",
+  "en": "Arctic char",
+  "sci": "Salvelinus alpinus",
+  "sub": "ROCK",
+  "mx": 80.0,
+  "base": 50.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 59,
+  "zone": "glacial",
+  "ko": "레이크트라우드",
+  "en": "Lake trout",
+  "sci": "Salvelinus namaycush",
+  "sub": "ROCK",
+  "mx": 120.0,
+  "base": 75.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 60,
+  "zone": "glacial",
+  "ko": "대서양연어",
+  "en": "Atlantic salmon",
+  "sci": "Salmo salar",
+  "sub": "OPEN_WATER",
+  "mx": 150.0,
+  "base": 95.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 61,
+  "zone": "glacial",
+  "ko": "울프피시",
+  "en": "Atlantic wolffish",
+  "sci": "Anarhichas lupus",
+  "sub": "ROCK",
+  "mx": 150.0,
+  "base": 95.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 62,
+  "zone": "glacial",
+  "ko": "럼프피시",
+  "en": "Lumpfish",
+  "sci": "Cyclopterus lumpus",
+  "sub": "ROCK",
+  "mx": 60.0,
+  "base": 40.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 63,
+  "zone": "glacial",
+  "ko": "오션파우트",
+  "en": "Ocean pout",
+  "sci": "Liparis liparis",
+  "sub": "ROCK",
+  "mx": 20.0,
+  "base": 13.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 64,
+  "zone": "glacial",
+  "ko": "롱혼스크얼핀",
+  "en": "Longhorn sculpin",
+  "sci": "Myoxocephalus octodecemspinosus",
+  "sub": "ROCK",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 65,
+  "zone": "glacial",
+  "ko": "그린란드샤크",
+  "en": "Greenland shark",
+  "sci": "Somniosus microcephalus",
+  "sub": "OPEN_WATER",
+  "mx": 600.0,
+  "base": 380.0,
+  "rar": "LEGENDARY",
+  "prot": true,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 66,
+  "zone": "glacial",
+  "ko": "포비걸",
+  "en": "Porbeagle",
+  "sci": "Lamna nasus",
+  "sub": "OPEN_WATER",
+  "mx": 250.0,
+  "base": 160.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 67,
+  "zone": "glacial",
+  "ko": "스피니독피시",
+  "en": "Spiny dogfish",
+  "sci": "Squalus acanthias",
+  "sub": "ROCK",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 68,
+  "zone": "glacial",
+  "ko": "질피시",
+  "en": "Sea eelpout",
+  "sci": "Zoarces viviparus",
+  "sub": "ROCK",
+  "mx": 40.0,
+  "base": 27.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 69,
+  "zone": "glacial",
+  "ko": "대서양할리벗",
+  "en": "Atlantic halibut",
+  "sci": "Hippoglossus hippoglossus",
+  "sub": "ROCK",
+  "mx": 300.0,
+  "base": 190.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 70,
+  "zone": "glacial",
+  "ko": "피코커플렌더",
+  "en": "Peacock flounder",
+  "sci": "Bothus mancus",
+  "sub": "SAND",
+  "mx": 45.0,
+  "base": 30.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   160
+  ],
+  "temp": [
+   -2,
+   8
+  ]
+ },
+ {
+  "id": 71,
+  "zone": "volcanic",
+  "ko": "돌발가물치",
+  "en": "Daggertooth pike conger",
+  "sci": "Muraenesox cinereus",
+  "sub": "VENT",
+  "mx": 200.0,
+  "base": 130.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 72,
+  "zone": "volcanic",
+  "ko": "그린모레이",
+  "en": "Green moray",
+  "sci": "Gymnothorax funebris",
+  "sub": "ROCK",
+  "mx": 250.0,
+  "base": 160.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 73,
+  "zone": "volcanic",
+  "ko": "자이언트모레이",
+  "en": "Giant moray",
+  "sci": "Gymnothorax javanicus",
+  "sub": "ROCK",
+  "mx": 300.0,
+  "base": 200.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 74,
+  "zone": "volcanic",
+  "ko": "샌드디버고비",
+  "en": "Sand diver goby",
+  "sci": "Amblygobius stethophthalmus",
+  "sub": "SAND",
+  "mx": 15.0,
+  "base": 10.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 75,
+  "zone": "volcanic",
+  "ko": "새커스틱프린지헤드",
+  "en": "Sarcastic fringehead",
+  "sci": "Neoclinus blenninus",
+  "sub": "ROCK",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 76,
+  "zone": "volcanic",
+  "ko": "스포트드스콜피나",
+  "en": "Spotted scorpionfish",
+  "sci": "Scorpaena guttata",
+  "sub": "ROCK",
+  "mx": 45.0,
+  "base": 30.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 77,
+  "zone": "volcanic",
+  "ko": "레드로크피시",
+  "en": "Red rockfish",
+  "sci": "Sebastes ruberrimus",
+  "sub": "ROCK",
+  "mx": 120.0,
+  "base": 80.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 78,
+  "zone": "volcanic",
+  "ko": "캐너리로크피시",
+  "en": "Canary rockfish",
+  "sci": "Sebastes pinniger",
+  "sub": "ROCK",
+  "mx": 90.0,
+  "base": 60.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 79,
+  "zone": "volcanic",
+  "ko": "버밀리언록피시",
+  "en": "Vermillion rockfish",
+  "sci": "Sebastes miniatus",
+  "sub": "ROCK",
+  "mx": 95.0,
+  "base": 62.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 80,
+  "zone": "volcanic",
+  "ko": "블랙록피시",
+  "en": "Black rockfish",
+  "sci": "Sebastes melanops",
+  "sub": "ROCK",
+  "mx": 70.0,
+  "base": 48.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 81,
+  "zone": "volcanic",
+  "ko": "블루록피시",
+  "en": "Blue rockfish",
+  "sci": "Sebastes mystinus",
+  "sub": "ROCK",
+  "mx": 60.0,
+  "base": 40.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 82,
+  "zone": "volcanic",
+  "ko": "노던스타게이저",
+  "en": "Northern stargazer",
+  "sci": "Astroscopus y-graecum",
+  "sub": "SAND",
+  "mx": 70.0,
+  "base": 45.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 83,
+  "zone": "volcanic",
+  "ko": "애틀랜틱토르피도",
+  "en": "Atlantic torpedo",
+  "sci": "Torpedo nobeliana",
+  "sub": "SAND",
+  "mx": 120.0,
+  "base": 80.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 84,
+  "zone": "volcanic",
+  "ko": "클리어노우스케이트",
+  "en": "Clearnose skate",
+  "sci": "Raja eglanteria",
+  "sub": "SAND",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 85,
+  "zone": "volcanic",
+  "ko": "서던스팅레이",
+  "en": "Southern stingray",
+  "sci": "Hypanus americanus",
+  "sub": "SAND",
+  "mx": 150.0,
+  "base": 100.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 86,
+  "zone": "volcanic",
+  "ko": "샌드리저드피시",
+  "en": "Sand lizardfish",
+  "sci": "Synodus saurus",
+  "sub": "SAND",
+  "mx": 40.0,
+  "base": 26.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 87,
+  "zone": "volcanic",
+  "ko": "발리후",
+  "en": "Ballyhoo",
+  "sci": "Hemiramphus brasiliensis",
+  "sub": "OPEN_WATER",
+  "mx": 40.0,
+  "base": 27.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 88,
+  "zone": "volcanic",
+  "ko": "와inged플라이잉피시",
+  "en": "Brownwing flyingfish",
+  "sci": "Hirundichthys planificeps",
+  "sub": "OPEN_WATER",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 89,
+  "zone": "volcanic",
+  "ko": "마히마히",
+  "en": "Common dolphinfish",
+  "sci": "Coryphaena hippurus",
+  "sub": "OPEN_WATER",
+  "mx": 210.0,
+  "base": 130.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 90,
+  "zone": "volcanic",
+  "ko": "세로",
+  "en": "Cero",
+  "sci": "Scomberomorus regalis",
+  "sub": "OPEN_WATER",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 91,
+  "zone": "volcanic",
+  "ko": "스페니시매커렐",
+  "en": "Spanish mackerel",
+  "sci": "Scomberomorus maculatus",
+  "sub": "OPEN_WATER",
+  "mx": 90.0,
+  "base": 60.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 92,
+  "zone": "volcanic",
+  "ko": "퍼밋",
+  "en": "Permit",
+  "sci": "Trachinotus falcatus",
+  "sub": "SAND",
+  "mx": 120.0,
+  "base": 80.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 93,
+  "zone": "volcanic",
+  "ko": "버터플라이폼파노",
+  "en": "Butterfly pompano",
+  "sci": "Trachinotus blochii",
+  "sub": "SAND",
+  "mx": 70.0,
+  "base": 45.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 94,
+  "zone": "volcanic",
+  "ko": "스누크",
+  "en": "Common snook",
+  "sci": "Centropomus undecimalis",
+  "sub": "ROCK",
+  "mx": 130.0,
+  "base": 85.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 95,
+  "zone": "volcanic",
+  "ko": "크레밸잭",
+  "en": "Crevalle jack",
+  "sci": "Caranx hippos",
+  "sub": "OPEN_WATER",
+  "mx": 110.0,
+  "base": 70.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 96,
+  "zone": "volcanic",
+  "ko": "블루핀프레빌",
+  "en": "Bluefin trevally",
+  "sci": "Caranx melampygus",
+  "sub": "OPEN_WATER",
+  "mx": 115.0,
+  "base": 75.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 97,
+  "zone": "volcanic",
+  "ko": "오네이트조피시",
+  "en": "Ornate jobfish",
+  "sci": "Aprion virescens",
+  "sub": "ROCK",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 98,
+  "zone": "volcanic",
+  "ko": "애드센션다람쥐치",
+  "en": "Squirrelfish",
+  "sci": "Holocentrus adscensionis",
+  "sub": "ROCK",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 99,
+  "zone": "volcanic",
+  "ko": "코러스쿰다람쥐치",
+  "en": "Reef squirrelfish",
+  "sci": "Sargocentron coruscum",
+  "sub": "CORAL",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 100,
+  "zone": "volcanic",
+  "ko": "마모레블렌니",
+  "en": "Mottled blenny",
+  "sci": "Parablennius marmoreus",
+  "sub": "ROCK",
+  "mx": 15.0,
+  "base": 10.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   0,
+   120
+  ],
+  "temp": [
+   18,
+   42
+  ]
+ },
+ {
+  "id": 101,
+  "zone": "mangrove",
+  "ko": "밀렛",
+  "en": "Fathead mullet",
+  "sci": "Mugil cephalus",
+  "sub": "MUD",
+  "mx": 100.0,
+  "base": 60.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 102,
+  "zone": "mangrove",
+  "ko": "스트라이프드밀렛",
+  "en": "Striped mullet",
+  "sci": "Mugil curema",
+  "sub": "MUD",
+  "mx": 40.0,
+  "base": 26.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 103,
+  "zone": "mangrove",
+  "ko": "스팟",
+  "en": "Spot",
+  "sci": "Leiostomus xanthurus",
+  "sub": "MUD",
+  "mx": 35.0,
+  "base": 24.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 104,
+  "zone": "mangrove",
+  "ko": "거프멘헤이든",
+  "en": "Gulf menhaden",
+  "sci": "Brevoortia patronus",
+  "sub": "MUD",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 105,
+  "zone": "mangrove",
+  "ko": "십스헤드",
+  "en": "Sheepshead",
+  "sci": "Archosargus probatocephalus",
+  "sub": "ROCK",
+  "mx": 75.0,
+  "base": 50.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 106,
+  "zone": "mangrove",
+  "ko": "블랙드럼",
+  "en": "Black drum",
+  "sci": "Pogonias cromis",
+  "sub": "MUD",
+  "mx": 160.0,
+  "base": 100.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 107,
+  "zone": "mangrove",
+  "ko": "레드드럼",
+  "en": "Red drum",
+  "sci": "Sciaenops ocellatus",
+  "sub": "MUD",
+  "mx": 130.0,
+  "base": 85.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 108,
+  "zone": "mangrove",
+  "ko": "스페이디피시",
+  "en": "Spadefish",
+  "sci": "Platax orbicularis",
+  "sub": "CORAL",
+  "mx": 60.0,
+  "base": 40.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 109,
+  "zone": "mangrove",
+  "ko": "바라문디",
+  "en": "Barramundi",
+  "sci": "Lates calcarifer",
+  "sub": "MUD",
+  "mx": 200.0,
+  "base": 120.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 110,
+  "zone": "mangrove",
+  "ko": "망그루브킬리피시",
+  "en": "Mangrove killifish",
+  "sci": "Kryptolebias marmoratus",
+  "sub": "MUD",
+  "mx": 5.0,
+  "base": 3.5,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 111,
+  "zone": "mangrove",
+  "ko": "타이드워터모하라",
+  "en": "Tidewater mojarra",
+  "sci": "Eucinostomus gula",
+  "sub": "MUD",
+  "mx": 20.0,
+  "base": 14.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 112,
+  "zone": "mangrove",
+  "ko": "실버스 모하라",
+  "en": "Silver mojarra",
+  "sci": "Eucinostomus argenteus",
+  "sub": "MUD",
+  "mx": 25.0,
+  "base": 17.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 113,
+  "zone": "mangrove",
+  "ko": "레이디피시",
+  "en": "Ladyfish",
+  "sci": "Elops saurus",
+  "sub": "MUD",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 114,
+  "zone": "mangrove",
+  "ko": "타폰",
+  "en": "Tarpon",
+  "sci": "Megalops atlanticus",
+  "sub": "MUD",
+  "mx": 250.0,
+  "base": 160.0,
+  "rar": "LEGENDARY",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 115,
+  "zone": "mangrove",
+  "ko": "본피시",
+  "en": "Bonefish",
+  "sci": "Albula vulpes",
+  "sub": "SAND",
+  "mx": 90.0,
+  "base": 55.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 116,
+  "zone": "mangrove",
+  "ko": "실벌시라고",
+  "en": "Silver sillago",
+  "sci": "Sillago sihama",
+  "sub": "SAND",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 117,
+  "zone": "mangrove",
+  "ko": "망그루브잭",
+  "en": "Mangrove jack",
+  "sci": "Lutjanus johnii",
+  "sub": "ROCK",
+  "mx": 60.0,
+  "base": 38.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 118,
+  "zone": "mangrove",
+  "ko": "망그루브레드스너퍼",
+  "en": "Mangrove red snapper",
+  "sci": "Lutjanus argentimaculatus",
+  "sub": "ROCK",
+  "mx": 120.0,
+  "base": 80.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 119,
+  "zone": "mangrove",
+  "ko": "그레이스너퍼",
+  "en": "Gray snapper",
+  "sci": "Lutjanus griseus",
+  "sub": "MUD",
+  "mx": 80.0,
+  "base": 50.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 120,
+  "zone": "mangrove",
+  "ko": "불샤크",
+  "en": "Bull shark",
+  "sci": "Carcharhinus leucas",
+  "sub": "MUD",
+  "mx": 350.0,
+  "base": 230.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 121,
+  "zone": "mangrove",
+  "ko": "카우노우스레이",
+  "en": "Cownose ray",
+  "sci": "Rhinoptera bonasus",
+  "sub": "MUD",
+  "mx": 160.0,
+  "base": 110.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 122,
+  "zone": "mangrove",
+  "ko": "시가트피시",
+  "en": "Sea catfish",
+  "sci": "Bagre marinus",
+  "sub": "MUD",
+  "mx": 90.0,
+  "base": 60.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 123,
+  "zone": "mangrove",
+  "ko": "애틀랜틱크로커",
+  "en": "Atlantic croaker",
+  "sci": "Micropogonias undulatus",
+  "sub": "MUD",
+  "mx": 75.0,
+  "base": 50.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 124,
+  "zone": "mangrove",
+  "ko": "위크피시",
+  "en": "Weakfish",
+  "sci": "Cynoscion regalis",
+  "sub": "MUD",
+  "mx": 90.0,
+  "base": 60.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 125,
+  "zone": "mangrove",
+  "ko": "스포트드시트라우트",
+  "en": "Spotted seatrout",
+  "sci": "Cynoscion nebulosus",
+  "sub": "MUD",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 126,
+  "zone": "mangrove",
+  "ko": "픽피시",
+  "en": "Pigfish",
+  "sci": "Orthopristis chrysoptera",
+  "sub": "MUD",
+  "mx": 40.0,
+  "base": 27.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 127,
+  "zone": "mangrove",
+  "ko": "서서아이포지",
+  "en": "Saucereye porgy",
+  "sci": "Calamus calamus",
+  "sub": "ROCK",
+  "mx": 45.0,
+  "base": 30.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 128,
+  "zone": "mangrove",
+  "ko": "샌드타일피시",
+  "en": "Sand tilefish",
+  "sci": "Malacanthus plumieri",
+  "sub": "SAND",
+  "mx": 45.0,
+  "base": 30.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 129,
+  "zone": "mangrove",
+  "ko": "사가숨피시",
+  "en": "Sargassum fish",
+  "sci": "Histrio histrio",
+  "sub": "KELP",
+  "mx": 18.0,
+  "base": 12.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 130,
+  "zone": "mangrove",
+  "ko": "체크드복어",
+  "en": "Checkered puffer",
+  "sci": "Sphoeroides testudineus",
+  "sub": "MUD",
+  "mx": 40.0,
+  "base": 26.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 131,
+  "zone": "mangrove",
+  "ko": "노던피프레쉬",
+  "en": "Northern puffer",
+  "sci": "Lagocephalus laevigatus",
+  "sub": "MUD",
+  "mx": 45.0,
+  "base": 30.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 132,
+  "zone": "mangrove",
+  "ko": "롱스파인포르큐파인",
+  "en": "Long-spine porcupinefish",
+  "sci": "Diodon holocanthus",
+  "sub": "MUD",
+  "mx": 60.0,
+  "base": 40.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 133,
+  "zone": "mangrove",
+  "ko": "포크피시",
+  "en": "Porkfish",
+  "sci": "Anisotremus virginicus",
+  "sub": "ROCK",
+  "mx": 40.0,
+  "base": 27.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 134,
+  "zone": "mangrove",
+  "ko": "실버퍼치",
+  "en": "Silver perch",
+  "sci": "Eupercus bifasciatus",
+  "sub": "MUD",
+  "mx": 25.0,
+  "base": 17.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 135,
+  "zone": "mangrove",
+  "ko": "나일틸라피아",
+  "en": "Nile tilapia",
+  "sci": "Oreochromis niloticus",
+  "sub": "MUD",
+  "mx": 60.0,
+  "base": 38.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   2,
+   30
+  ],
+  "temp": [
+   22,
+   32
+  ]
+ },
+ {
+  "id": 136,
+  "zone": "oceanic",
+  "ko": "옐로핀튜나",
+  "en": "Yellowfin tuna",
+  "sci": "Thunnus albacares",
+  "sub": "OPEN_WATER",
+  "mx": 240.0,
+  "base": 150.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 137,
+  "zone": "oceanic",
+  "ko": "빅아이튜나",
+  "en": "Bigeye tuna",
+  "sci": "Thunnus obesus",
+  "sub": "OPEN_WATER",
+  "mx": 250.0,
+  "base": 160.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 138,
+  "zone": "oceanic",
+  "ko": "블루핀튜나",
+  "en": "Atlantic bluefin tuna",
+  "sci": "Thunnus thynnus",
+  "sub": "OPEN_WATER",
+  "mx": 460.0,
+  "base": 300.0,
+  "rar": "LEGENDARY",
+  "prot": true,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 139,
+  "zone": "oceanic",
+  "ko": "알바코어",
+  "en": "Albacore",
+  "sci": "Thunnus alalunga",
+  "sub": "OPEN_WATER",
+  "mx": 140.0,
+  "base": 90.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 140,
+  "zone": "oceanic",
+  "ko": "스킵잭",
+  "en": "Skipjack tuna",
+  "sci": "Katsuwonus pelamis",
+  "sub": "OPEN_WATER",
+  "mx": 110.0,
+  "base": 70.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 141,
+  "zone": "oceanic",
+  "ko": "보니토",
+  "en": "Pacific bonito",
+  "sci": "Sarda orientalis",
+  "sub": "OPEN_WATER",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 142,
+  "zone": "oceanic",
+  "ko": "프리게이트맥커렐",
+  "en": "Frigate mackerel",
+  "sci": "Auxis thazard",
+  "sub": "OPEN_WATER",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 143,
+  "zone": "oceanic",
+  "ko": "애틀랜맊커렐",
+  "en": "Atlantic mackerel",
+  "sci": "Scomber scombrus",
+  "sub": "OPEN_WATER",
+  "mx": 60.0,
+  "base": 40.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 144,
+  "zone": "oceanic",
+  "ko": "럽쿠맥커렐",
+  "en": "Chub mackerel",
+  "sci": "Scomber japonicus",
+  "sub": "OPEN_WATER",
+  "mx": 60.0,
+  "base": 40.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 145,
+  "zone": "oceanic",
+  "ko": "왕삼치",
+  "en": "King mackerel",
+  "sci": "Scomberomorus cavalla",
+  "sub": "OPEN_WATER",
+  "mx": 180.0,
+  "base": 120.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 146,
+  "zone": "oceanic",
+  "ko": "웨후",
+  "en": "Wahoo",
+  "sci": "Acanthocybium solandri",
+  "sub": "OPEN_WATER",
+  "mx": 250.0,
+  "base": 160.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 147,
+  "zone": "oceanic",
+  "ko": "블루마린",
+  "en": "Blue marlin",
+  "sci": "Makaira nigricans",
+  "sub": "OPEN_WATER",
+  "mx": 430.0,
+  "base": 290.0,
+  "rar": "LEGENDARY",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 148,
+  "zone": "oceanic",
+  "ko": "블랙마린",
+  "en": "Black marlin",
+  "sci": "Istiompax indica",
+  "sub": "OPEN_WATER",
+  "mx": 500.0,
+  "base": 330.0,
+  "rar": "LEGENDARY",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 149,
+  "zone": "oceanic",
+  "ko": "새드피시",
+  "en": "Sailfish",
+  "sci": "Istiophorus platypterus",
+  "sub": "OPEN_WATER",
+  "mx": 340.0,
+  "base": 220.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 150,
+  "zone": "oceanic",
+  "ko": "스워드피시",
+  "en": "Swordfish",
+  "sci": "Xiphias gladius",
+  "sub": "OPEN_WATER",
+  "mx": 450.0,
+  "base": 300.0,
+  "rar": "LEGENDARY",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 151,
+  "zone": "oceanic",
+  "ko": "오파",
+  "en": "Opah",
+  "sci": "Lampris guttatus",
+  "sub": "OPEN_WATER",
+  "mx": 210.0,
+  "base": 140.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 152,
+  "zone": "oceanic",
+  "ko": "퍼시픽소주리",
+  "en": "Pacific saury",
+  "sci": "Cololabis saira",
+  "sub": "OPEN_WATER",
+  "mx": 40.0,
+  "base": 27.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 153,
+  "zone": "oceanic",
+  "ko": "오션선피시",
+  "en": "Ocean sunfish",
+  "sci": "Mola mola",
+  "sub": "OPEN_WATER",
+  "mx": 330.0,
+  "base": 220.0,
+  "rar": "LEGENDARY",
+  "prot": true,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 154,
+  "zone": "oceanic",
+  "ko": "베이싱샤크",
+  "en": "Basking shark",
+  "sci": "Cetorhinus maximus",
+  "sub": "OPEN_WATER",
+  "mx": 1000.0,
+  "base": 650.0,
+  "rar": "LEGENDARY",
+  "prot": true,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 155,
+  "zone": "oceanic",
+  "ko": "웨일샤크",
+  "en": "Whale shark",
+  "sci": "Rhincodon typus",
+  "sub": "OPEN_WATER",
+  "mx": 1200.0,
+  "base": 800.0,
+  "rar": "LEGENDARY",
+  "prot": true,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 156,
+  "zone": "oceanic",
+  "ko": "SHORTFINMAKO",
+  "en": "Shortfin mako",
+  "sci": "Isurus oxyrinchus",
+  "sub": "OPEN_WATER",
+  "mx": 400.0,
+  "base": 260.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 157,
+  "zone": "oceanic",
+  "ko": "실키샤크",
+  "en": "Silky shark",
+  "sci": "Carcharhinus falciformis",
+  "sub": "OPEN_WATER",
+  "mx": 330.0,
+  "base": 220.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 158,
+  "zone": "oceanic",
+  "ko": "오션화이트팁",
+  "en": "Oceanic whitetip",
+  "sci": "Carcharhinus longimanus",
+  "sub": "OPEN_WATER",
+  "mx": 300.0,
+  "base": 200.0,
+  "rar": "EPIC",
+  "prot": true,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 159,
+  "zone": "oceanic",
+  "ko": "블루샤크",
+  "en": "Blue shark",
+  "sci": "Prionace glauca",
+  "sub": "OPEN_WATER",
+  "mx": 380.0,
+  "base": 250.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 160,
+  "zone": "oceanic",
+  "ko": "타이거샤크",
+  "en": "Tiger shark",
+  "sci": "Galeocerdo cuvier",
+  "sub": "OPEN_WATER",
+  "mx": 530.0,
+  "base": 350.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 161,
+  "zone": "oceanic",
+  "ko": "귀상어",
+  "en": "Scalloped hammerhead",
+  "sci": "Sphyrna lewini",
+  "sub": "OPEN_WATER",
+  "mx": 430.0,
+  "base": 280.0,
+  "rar": "EPIC",
+  "prot": true,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 162,
+  "zone": "oceanic",
+  "ko": "레몬샤크",
+  "en": "Lemon shark",
+  "sci": "Negaprion brevirostris",
+  "sub": "SAND",
+  "mx": 350.0,
+  "base": 230.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 163,
+  "zone": "oceanic",
+  "ko": "캐리비언리프샤크",
+  "en": "Caribbean reef shark",
+  "sci": "Carcharhinus perezi",
+  "sub": "CORAL",
+  "mx": 300.0,
+  "base": 200.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 164,
+  "zone": "oceanic",
+  "ko": "그레이트니들피시",
+  "en": "Great needlefish",
+  "sci": "Belone belone",
+  "sub": "OPEN_WATER",
+  "mx": 130.0,
+  "base": 85.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 165,
+  "zone": "oceanic",
+  "ko": "브라마",
+  "en": "Pomfret",
+  "sci": "Brama bruno",
+  "sub": "OPEN_WATER",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 166,
+  "zone": "oceanic",
+  "ko": "그레이트엠버재ك",
+  "en": "Greater amberjack",
+  "sci": "Seriola dumerili",
+  "sub": "OPEN_WATER",
+  "mx": 180.0,
+  "base": 120.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 167,
+  "zone": "oceanic",
+  "ko": "레서엠버재ك",
+  "en": "Lesser amberjack",
+  "sci": "Seriola fasciata",
+  "sub": "ROCK",
+  "mx": 70.0,
+  "base": 45.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 168,
+  "zone": "oceanic",
+  "ko": "옐로우테일엠버재ك",
+  "en": "Yellowtail amberjack",
+  "sci": "Seriola lalandi",
+  "sub": "OPEN_WATER",
+  "mx": 150.0,
+  "base": 95.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 169,
+  "zone": "oceanic",
+  "ko": "자이언트트레밸리",
+  "en": "Giant trevally",
+  "sci": "Caranx ignobilis",
+  "sub": "OPEN_WATER",
+  "mx": 170.0,
+  "base": 110.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 170,
+  "zone": "oceanic",
+  "ko": "골든투레밸리",
+  "en": "Golden trevally",
+  "sci": "Gnathanodon speciosus",
+  "sub": "SAND",
+  "mx": 120.0,
+  "base": 80.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 171,
+  "zone": "oceanic",
+  "ko": "옐로스트라이프스카드",
+  "en": "Yellowstripe scad",
+  "sci": "Selaroides leptolepis",
+  "sub": "OPEN_WATER",
+  "mx": 25.0,
+  "base": 17.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 172,
+  "zone": "oceanic",
+  "ko": "일본전갱이",
+  "en": "Japanese horse mackerel",
+  "sci": "Trachurus japonicus",
+  "sub": "OPEN_WATER",
+  "mx": 50.0,
+  "base": 33.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 173,
+  "zone": "oceanic",
+  "ko": "메디테레이션전갱이",
+  "en": "Mediterranean horse mackerel",
+  "sci": "Trachurus mediterraneus",
+  "sub": "OPEN_WATER",
+  "mx": 50.0,
+  "base": 33.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 174,
+  "zone": "oceanic",
+  "ko": "유럽정어리",
+  "en": "European anchovy",
+  "sci": "Engraulis encrasicolus",
+  "sub": "OPEN_WATER",
+  "mx": 20.0,
+  "base": 13.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 175,
+  "zone": "oceanic",
+  "ko": "유럽가다랑어",
+  "en": "European sardine",
+  "sci": "Sardina pilchardus",
+  "sub": "OPEN_WATER",
+  "mx": 27.0,
+  "base": 18.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   10,
+   120
+  ],
+  "temp": [
+   12,
+   28
+  ]
+ },
+ {
+  "id": 176,
+  "zone": "abyssal",
+  "ko": "앙글러피시",
+  "en": "Anglerfish",
+  "sci": "Lophius piscatorius",
+  "sub": "MUD",
+  "mx": 200.0,
+  "base": 130.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 177,
+  "zone": "abyssal",
+  "ko": "팽투스",
+  "en": "Common fangtooth",
+  "sci": "Anoplogaster cornuta",
+  "sub": "TRENCH",
+  "mx": 20.0,
+  "base": 13.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 178,
+  "zone": "abyssal",
+  "ko": "블랙시데빌",
+  "en": "Black seadevil",
+  "sci": "Melanocetus johnsonii",
+  "sub": "TRENCH",
+  "mx": 18.0,
+  "base": 12.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 179,
+  "zone": "abyssal",
+  "ko": "굴퍼일",
+  "en": "Gulper eel",
+  "sci": "Eurypharynx pelecanoides",
+  "sub": "TRENCH",
+  "mx": 100.0,
+  "base": 65.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 180,
+  "zone": "abyssal",
+  "ko": "라운드노스가레나다이어",
+  "en": "Roundnose grenadier",
+  "sci": "Coryphaenoides rupestris",
+  "sub": "SAND",
+  "mx": 110.0,
+  "base": 70.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 181,
+  "zone": "abyssal",
+  "ko": "어비셜가레나다이어",
+  "en": "Abyssal grenadier",
+  "sci": "Coryphaenoides armatus",
+  "sub": "SAND",
+  "mx": 110.0,
+  "base": 70.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 182,
+  "zone": "abyssal",
+  "ko": "스포티드란턴피시",
+  "en": "Spotted lanternfish",
+  "sci": "Myctophum punctatum",
+  "sub": "OPEN_WATER",
+  "mx": 15.0,
+  "base": 10.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 183,
+  "zone": "abyssal",
+  "ko": "워미니란턴피시",
+  "en": "Warming's lanternfish",
+  "sci": "Ceratoscopelus warmingii",
+  "sub": "OPEN_WATER",
+  "mx": 10.0,
+  "base": 7.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 184,
+  "zone": "abyssal",
+  "ko": "카를스베르크란턴피시",
+  "en": "Soft lanternfish",
+  "sci": "Electrona carlsbergi",
+  "sub": "OPEN_WATER",
+  "mx": 10.0,
+  "base": 7.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 185,
+  "zone": "abyssal",
+  "ko": "슬렌더스나이크일",
+  "en": "Slender snipe eel",
+  "sci": "Nemichthys scolopaceus",
+  "sub": "TRENCH",
+  "mx": 130.0,
+  "base": 85.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 186,
+  "zone": "abyssal",
+  "ko": "세이버투스피시",
+  "en": "Sabertooth fish",
+  "sci": "Evermannella balbo",
+  "sub": "TRENCH",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 187,
+  "zone": "abyssal",
+  "ko": "바로엘아이",
+  "en": "Barreleye",
+  "sci": "Macropinna microstoma",
+  "sub": "TRENCH",
+  "mx": 15.0,
+  "base": 10.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 188,
+  "zone": "abyssal",
+  "ko": "보니어드애스피시",
+  "en": "Bony-eared assfish",
+  "sci": "Acanthonous sacculus",
+  "sub": "TRENCH",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 189,
+  "zone": "abyssal",
+  "ko": "올리브브로툴라",
+  "en": "Olive brotula",
+  "sci": "Brotula multibarbata",
+  "sub": "TRENCH",
+  "mx": 40.0,
+  "base": 27.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 190,
+  "zone": "abyssal",
+  "ko": "트리플워트시데빌",
+  "en": "Triplewart seadevil",
+  "sci": "Cryptopsaras couesii",
+  "sub": "TRENCH",
+  "mx": 15.0,
+  "base": 10.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 191,
+  "zone": "abyssal",
+  "ko": "파고다피시",
+  "en": "Pagoda fish",
+  "sci": "Chaunax endeavouri",
+  "sub": "MUD",
+  "mx": 40.0,
+  "base": 27.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 192,
+  "zone": "abyssal",
+  "ko": "오렌지로피",
+  "en": "Orange roughy",
+  "sci": "Hoplostethus atlanticus",
+  "sub": "ROCK",
+  "mx": 75.0,
+  "base": 50.0,
+  "rar": "EPIC",
+  "prot": true,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 193,
+  "zone": "abyssal",
+  "ko": "스톱라이트루스조",
+  "en": "Stoplight loosejaw",
+  "sci": "Malacosteus niger",
+  "sub": "TRENCH",
+  "mx": 25.0,
+  "base": 17.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 194,
+  "zone": "abyssal",
+  "ko": "블랙드래곤스토미아스",
+  "en": "Dragonfish",
+  "sci": "Stomias boa",
+  "sub": "TRENCH",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 195,
+  "zone": "abyssal",
+  "ko": "커스크",
+  "en": "Cusk",
+  "sci": "Brosme brosme",
+  "sub": "ROCK",
+  "mx": 120.0,
+  "base": 80.0,
+  "rar": "UNCOMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 196,
+  "zone": "abyssal",
+  "ko": "그린란드할리벗",
+  "en": "Greenland halibut",
+  "sci": "Reinhardtius hippoglossoides",
+  "sub": "SAND",
+  "mx": 240.0,
+  "base": 150.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 197,
+  "zone": "abyssal",
+  "ko": "에스코랄",
+  "en": "Escolar",
+  "sci": "Lepidocybium flavobrunneum",
+  "sub": "TRENCH",
+  "mx": 180.0,
+  "base": 120.0,
+  "rar": "EPIC",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 198,
+  "zone": "abyssal",
+  "ko": "오일피시",
+  "en": "Oilfish",
+  "sci": "Ruvettus pretiosus",
+  "sub": "TRENCH",
+  "mx": 200.0,
+  "base": 130.0,
+  "rar": "RARE",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 199,
+  "zone": "abyssal",
+  "ko": "딥시깁버피시",
+  "en": "Deepsea gibberfish",
+  "sci": "Gibberichthys latos",
+  "sub": "TRENCH",
+  "mx": 30.0,
+  "base": 20.0,
+  "rar": "UNKNOWN",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ },
+ {
+  "id": 200,
+  "zone": "abyssal",
+  "ko": "디아푸스란턴피시",
+  "en": "Suborbital lanternfish",
+  "sci": "Diaphus suborbitalis",
+  "sub": "OPEN_WATER",
+  "mx": 9.0,
+  "base": 6.0,
+  "rar": "COMMON",
+  "prot": false,
+  "depth": [
+   60,
+   300
+  ],
+  "temp": [
+   2,
+   12
+  ]
+ }
+]
