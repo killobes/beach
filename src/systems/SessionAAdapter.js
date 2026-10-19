@@ -29,7 +29,23 @@ export function fromSessionAAction(action) {
     case 'RETURN_TO_SHIP':
     case 'GO_BACK_TO_SHIP': // 구버전 A 호환
       return { type: 'RETURN_TO_SHIP' };
+    case 'UNDOCK':
+    case 'DEPART': // 세션 A의 출항 액션명 호환
+      return { type: 'UNDOCK' };
+    case 'ENTER_WATER':
+      return { type: 'ENTER_WATER', x: action.x, z: action.z };
+    case 'DOCK_AT_HARBOR':
+      return { type: 'DOCK' };
     default:
       return action;
   }
+}
+
+// 스냅샷에서 어종 정보를 붙여 개체 목록 반환 (세션 A 렌더러용)
+export function specimensWithSpecies(snapB, speciesById) {
+  return snapB.specimens.map(s => ({
+    ...s,
+    nameKo: speciesById?.get(s.speciesId)?.nameKo ?? null,
+    zone: s.zone ?? null,
+  }));
 }

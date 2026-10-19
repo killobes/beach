@@ -191,8 +191,11 @@ export function createGame(config = {}) {
           // 강제 귀환: 위험 상태 표시
           state.diver.inWater = false; state.diver.depthM = 0; state.diver.y = 0;
           state.diver.x = state.ship.x; state.diver.z = state.ship.z;
-          state.shells = Math.max(0, state.shells - 20);
-          addLog('공기 고갈 — 구조됨 (조개 20 소모)');
+          // 창고의 절반 유실 (직접 화폐 차감 대신 게임다운 페널티)
+          const lostCount = Math.ceil(state.inventory.length / 2);
+          state.inventory.splice(0, lostCount);
+          state.holdUsedKg = Math.round(state.inventory.reduce((a, it) => a + it.weightKg, 0) * 1000) / 1000;
+          addLog(`공기 고갈 — 구조됨. 포획물 ${lostCount}마리 유실 💔`);
         }
       }
       // 개체 유지: 부족분 재생성 (시드 난수 소비 최소화 — 부족한 해역만 판정)
@@ -210,12 +213,23 @@ export function createGame(config = {}) {
       return ok();
     },
 
+    UNDOCK() {
+      if (!state.ship.docked) return fail('이미 출항 상태입니다.');
+      const isl = ISLANDS.find(i => i.harbor);
+      const dx = state.ship.x - isl.x, dz = state.ship.z - isl.z;
+      if (dx * dx + dz * dz > 150 * 150) return fail('정박 위치(항구 근처)에서만 출항할 수 있습니다.');
+      state.ship.docked = false;
+      addLog('출항 완료 ⛵');
+      return ok();
+    },
+
     MOVE_SHIP(a) {
       const def = shipDef(state.ship.level);
       const fwd = clamp(a.forward ?? 0, -1, 1);
       const turn = clamp(a.turn ?? 0, -1, 1);
       const dt = clamp(a.dtSec ?? 1 / 60, 0, 1);
-      if (state.ship.docked && fwd !== 0) return fail('배가 부두에 정박해 있습니다. ENTER_WATER 전에 출항하세요.');
+      if (dt <= 0) return ok({ x: state.ship.x, z: state.ship.z, zone: zoneAt(state.ship.x, state.ship.z) });
+      if (state.ship.docked && (fwd !== 0 || turn !== 0)) return fail('배가 부두에 정박해 있습니다. 먼저 UNDOCK(출항)하세요.');
       state.ship.headingRad += turn * 1.5 * dt;
       const target = fwd * def.maxSpeedMs * (state.weather === 'storm' ? 0.6 : 1);
       state.ship.speedMs += (target - state.ship.speedMs) * Math.min(1, dt * 2);
@@ -245,21 +259,29 @@ export function createGame(config = {}) {
       return ok({ x: state.ship.x, z: state.ship.z, zone: zk });
     },
 
-    DOCK(a) {
+    DOCK() {
+      if (state.diver.inWater) return fail('다이버가 물속에 있습니다. 먼저 RETURN_TO_SHIP(귀선)하세요.');
       const isl = ISLANDS.find(i => i.harbor);
       const dx = state.ship.x - isl.x, dz = state.ship.z - isl.z;
       if (dx * dx + dz * dz > 120 * 120) return fail('항구 근처에서만 정박할 수 있습니다.');
       state.ship.docked = true;
+      state.ship.speedMs = 0;
+      addLog('정박 완료 ⚓');
       return ok();
     },
 
     ENTER_WATER(a) {
-      if (state.ship.docked) return fail('먼저 출항하세요 (MOVE_SHIP).');
+      if (state.diver.inWater) return fail('이미 물속에 있습니다.');
+      if (state.ship.docked) return fail('먼저 출항하세요 (UNDOCK).');
+      // 입수 위치는 선박 근처로 제한 (원격 주입 방지)
+      const wx = a?.x ?? state.ship.x, wz = a?.z ?? state.ship.z;
+      const ddx = wx - state.ship.x, ddz = wz - state.ship.z;
+      if (ddx * ddx + ddz * ddz > 80 * 80) return fail('선박 근처(80m 이내)에서만 입수할 수 있습니다.');
       const suit = suitDef(state.equipment.equippedSuit);
       const tank = tankDef(state.equipment.equippedTank);
       state.diver.inWater = true;
-      state.diver.x = a?.x ?? state.ship.x;
-      state.diver.z = a?.z ?? state.ship.z;
+      state.diver.x = wx;
+      state.diver.z = wz;
       state.diver.y = -1;
       state.diver.depthM = 1;
       state.diver.maxAir = tank.airCapacity + (state.companions.ari ? COMPANIONS.find(c=>c.id==='ari').bonus.value : 0);
@@ -281,14 +303,19 @@ export function createGame(config = {}) {
       const tank = tankDef(state.equipment.equippedTank);
       const speed = 2 * suit.moveMod * tank.moveMod;
       const dt = clamp(a.dtSec ?? 1 / 60, 0, 1);
+      if (dt <= 0) return ok({ depthM: state.diver.depthM });
       const mx = clamp(a.dx ?? 0, -1, 1) * speed * dt;
       const mz = clamp(a.dz ?? 0, -1, 1) * speed * dt;
       // 하강: dy>0 = 내려감(깊이 증가). Y좌표는 음수.
       const my = clamp(a.dy ?? 0, -1, 1);
       const ndepth = clamp(state.diver.depthM + my * speed * dt, 0.5, suit.maxDepthM);
-      if (ndepth > suit.maxDepthM) return fail(`잠수복 한계 수심 ${suit.maxDepthM}m를 초과할 수 없습니다.`);
       const nx = clamp(state.diver.x + mx, 0, WORLD_CONFIG.widthM);
       const nz = clamp(state.diver.z + mz, 0, WORLD_CONFIG.depthM);
+      // 다이버도 섬 내륙 침범 금지 (수면/연안 이동 시 지형 관통 방지)
+      for (const isl of ISLANDS) {
+        const dx = nx - isl.x, dz = nz - isl.z;
+        if (dx * dx + dz * dz < 30 * 30 && state.diver.depthM < 3) return fail('섬 연안(모래사장)에는 들어갈 수 없습니다.');
+      }
       state.diver.x = nx; state.diver.z = nz; state.diver.depthM = ndepth; state.diver.y = -ndepth;
       if (ndepth > state.maxDepthReachedM) state.maxDepthReachedM = ndepth;
       return ok({ depthM: ndepth });
@@ -301,10 +328,12 @@ export function createGame(config = {}) {
       if (idx < 0) return fail('존재하지 않는 개체입니다.');
       const specimen = state.specimens[idx];
       const sp = byId.get(specimen.speciesId);
+      // 실제 거리 계산 (다이버 ↔ 개체 3D 유클리드). distanceM은 상한으로만 신뢰.
+      const realDist = Math.hypot(state.diver.x - specimen.x, state.diver.y - specimen.y, state.diver.z - specimen.z);
+      const dist = a.distanceM != null ? Math.max(a.distanceM, realDist) : realDist;
       // 보호종 차단 (거리 판정보다 먼저)
       if (sp.protected) { markDiscovered(sp.id, zoneAt(specimen.x, specimen.z)); return fail('보호종은 포획할 수 없습니다. 관찰만 가능합니다.'); }
       // 거리 검사
-      const dist = a.distanceM ?? Math.hypot(state.diver.x - specimen.x, state.diver.y - specimen.y, state.diver.z - specimen.z);
       const spear = spearDef(state.equipment.equippedSpear);
       if (dist > spear.rangeM) return fail(`작살 사거리(${spear.rangeM}m)를 초과했습니다 (${Math.round(dist)}m).`);
       // 성공 판정 (시드 난수)
@@ -539,6 +568,14 @@ export function createGame(config = {}) {
     dispatch, getSnapshot, save, load,
     subscribe(cb) { listeners.add(cb); return () => listeners.delete(cb); },
     nearby,
+    // 창고 판매 예정가 조회 (UI가 가격 공식을 중복 구현하지 않도록 단일 소스 제공)
+    estimateSellValue() {
+      const values = state.inventory.map(it => {
+        const sp = byId.get(it.speciesId);
+        return sp ? sellPrice(sp, it) : 0;
+      });
+      return { values, total: values.reduce((a, b) => a + b, 0) };
+    },
     // 세션 A 호환 API
     getSpecimens(zoneKey) {
       return state.specimens.filter(s => !zoneKey || (s.zone ?? zoneAt(s.x, s.z)) === zoneKey).map(s => ({ ...s }));

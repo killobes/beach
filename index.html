@@ -213,7 +213,7 @@
         if (/^(input|textarea)$/i.test(e.target.tagName)) return;
         keys[e.key.toLowerCase()] = true;
         const k = e.key.toLowerCase();
-        if (k === 'u') { game._state.ship.docked = false; log('출항! ⛵'); }
+        if (k === 'u') { const r = game.dispatch({ type: 'UNDOCK' }); log(r.ok ? '출항! ⛵' : '실패: ' + r.reason); }
         if (k === 'k') { const r = game.dispatch({ type: 'DOCK' }); log(r.ok ? '정박 완료 ⚓' : '실패: ' + r.reason); }
         if (k === 'e') { const r = game.dispatch({ type: 'ENTER_WATER' }); log(r.ok ? '풍덩! 입수 🫧' : '실패: ' + r.reason); }
         if (k === 'q') { const r = game.dispatch({ type: 'RETURN_TO_SHIP' }); log(r.ok ? '귀선 🛟' : '실패: ' + r.reason); }
@@ -230,13 +230,25 @@
         const x = dv.inWater ? dv.x : sh.x, z = dv.inWater ? dv.z : sh.z, y = dv.inWater ? dv.y : 0;
         return game.nearby(x, z, y, 400, { sort: 'distance', limit: 1 })[0];
       }
-      function approach(t) { const dv = game._state.diver; dv.x=t.x; dv.z=t.z; dv.y=t.y; dv.depthM=Math.abs(t.y); }
+      // 텔레포트 금지: 엔진 규칙(MOVE_DIVER)으로 목표 개체까지 단계적 접근
+      function approach(t) {
+        const dv = game._state.diver;
+        for (let i = 0; i < 400; i++) {
+          const dx = t.x - dv.x, dz = t.z - dv.z, dy = Math.abs(t.y) - dv.depthM;
+          if (Math.hypot(dx, dz, dy) < 3.5) return true;
+          const n = Math.hypot(dx, dz) || 1;
+          game.dispatch({ type:'MOVE_DIVER', dx: dx/n, dz: dz/n, dy: dy>0?1:(dy<0?-1:0), dtSec: 0.5 });
+        }
+        return Math.hypot(t.x-dv.x, t.z-dv.z, Math.abs(t.y)-dv.depthM) <= 6;
+      }
       function tryCatchNearest() {
         if (!game._state.diver.inWater) { log('포획 실패: 잠수 중이 아니에요 (E로 풍덩 🫧)'); return; }
         const t = nearest();
         if (!t) { log('포획 실패: 근처에 물고기가 없어요'); return; }
         approach(t);
-        const r = game.dispatch({ type: 'CATCH_ATTEMPT', specimenId: t.specimenId, distanceM: Math.min(5, t.distanceM) });
+        const okApproach = approach(t);
+        const r = okApproach ? game.dispatch({ type: 'CATCH_ATTEMPT', specimenId: t.specimenId })
+                             : { ok:false, reason:'물고기에게 너무 멀리 있어요 — 다시 시도!' };
         const sp = byId.get(t.speciesId);
         log(r.ok ? `🎯 ${sp.nameKo} 포획! ${t.lengthCm}cm / ${t.weightKg}kg` : `✗ ${sp.nameKo}: ${r.reason}`);
       }
@@ -325,11 +337,8 @@
       // ---------- Sell Catch ----------
       function renderSell() {
         const snap = game.getSnapshot();
-        const rows = snap.inventory.map(it => {
-          const sp = byId.get(it.speciesId);
-          const price = sp.protected ? 0 : Math.round(sp.rarity * 30 * Math.max(0.3, it.lengthCm / sp.gameLengthCm) * (1 + it.weightKg / 50));
-          return { ...it, sp, price };
-        });
+        const est = game.estimateSellValue(); // 엔진 단일 소스 (중복 가격 공식 금지)
+        const rows = snap.inventory.map((it, i) => ({ ...it, sp: byId.get(it.speciesId), price: est.values[i] ?? 0 }));
         $('sellList').innerHTML = rows.length ? rows.map(r =>
           `<div class="card"><div><div class="l">${r.sp.nameKo} ${RARITY_LABELS[r.sp.rarity].stars}</div>
            <div class="s">${r.lengthCm}cm · ${r.weightKg}kg</div></div><b>🐚${r.price}</b></div>`).join('')
@@ -451,8 +460,9 @@
           if (!game._state.diver.inWater) { log('먼저 E로 풍덩! 🫧'); return; }
           const t = game._state.specimens.find(s => s.specimenId === b.dataset.sid);
           if (!t) return;
-          approach(t);
-          const r = game.dispatch({ type:'CATCH_ATTEMPT', specimenId:t.specimenId, distanceM:4 });
+          const reached = approach(t);
+          const r = reached ? game.dispatch({ type:'CATCH_ATTEMPT', specimenId:t.specimenId })
+                            : { ok:false, reason:'거리 부족 — 다시 시도!' };
           const sp = byId.get(t.speciesId);
           log(r.ok ? `🎯 ${sp.nameKo} 포획!` : `✗ ${r.reason}`);
         });
