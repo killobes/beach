@@ -1,10 +1,11 @@
-// OCEAN GAIA V3.2 — 메인 게임 엔진 (세션 B)
+// SpearPals: Blue Harbor — 메인 게임 엔진 (세션 B)
 // Three.js import 금지. 순수 JS. createGame(config) → { dispatch, getSnapshot, subscribe, save, load }
 import { SeededRNG } from './Rng.js';
 import { WORLD_CONFIG, clamp } from './units.js';
 import { buildSpecies, makeSpecimen, weightFromLength, ZONES } from '../data/species.js';
 import { SPEARS, TANKS, SUITS, SHIP_UPGRADES } from '../data/equipment.js';
 import { ISLANDS, DIVE_SITES, COMPANIONS, BOSSES, FOSSILS, zoneAt } from '../data/world.js';
+import { SAVE_KEY, LEGACY_SAVE_KEYS } from '../data/brand.js';
 
 const GAME_VERSION = '3.2.0';
 const SPECIMEN_CAP_PER_ZONE = 40;
@@ -496,15 +497,22 @@ export function createGame(config = {}) {
   // ---------- 저장/불러오기 ----------
   function save() {
     const data = {
-      version: GAME_VERSION, seed: state.seed,
+      version: GAME_VERSION, seed: state.seed, game: 'spearpals',
       state: JSON.parse(JSON.stringify({ ...state, rngState: rng.getState() })),
     };
-    storage.setItem('oceangaia.save', JSON.stringify(data));
+    storage.setItem(SAVE_KEY, JSON.stringify(data));
     return ok({ savedAt: state.timeSec });
   }
 
   function load() {
-    const raw = storage.getItem('oceangaia.save');
+    // 신 키 우선, 없으면 구 버전(OCEAN GAIA) 키에서 마이그레이션 시도
+    let raw = storage.getItem(SAVE_KEY);
+    let fromLegacy = false;
+    for (const k of LEGACY_SAVE_KEYS) {
+      if (raw) break;
+      raw = storage.getItem(k);
+      if (raw) fromLegacy = true;
+    }
     if (!raw) return fail('저장 데이터가 없습니다.');
     let data;
     try { data = JSON.parse(raw); } catch { return fail('저장 데이터가 손상되었습니다.'); }
@@ -516,9 +524,15 @@ export function createGame(config = {}) {
     Object.keys(state).forEach(k => { if (k in s) state[k] = s[k]; });
     delete state.rngState;
     rng.setState(s.rngState);
+    if (fromLegacy) {
+      // 구 저장본을 새 키로 승격 (1회만)
+      storage.setItem(SAVE_KEY, raw);
+      for (const k of LEGACY_SAVE_KEYS) storage.removeItem(k);
+      addLog('구 버전 저장을 SpearPals 저장으로 마이그레이션했습니다.');
+    }
     addLog('게임 불러오기 완료');
     emit();
-    return ok();
+    return ok({ migrated: fromLegacy });
   }
 
   return {
@@ -531,6 +545,7 @@ export function createGame(config = {}) {
     },
     getZoneAt(x, z) { return zoneAt(x, z); },
     _state: state,
+    _rng: rng,
   };
 }
 

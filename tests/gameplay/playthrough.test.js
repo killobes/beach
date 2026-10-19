@@ -1,4 +1,4 @@
-// OCEAN GAIA V3.2 — 통합 시나리오 테스트: 출항 → 항해 → 잠수 → 포획 → 귀선 → 판매 → 업그레이드
+// SpearPals: Blue Harbor — 통합 시나리오 테스트: 출항 → 항해 → 잠수 → 포획 → 귀선 → 판매 → 업그레이드
 import { describe, it, expect } from 'vitest';
 import { createGame, memoryStorage } from '../../src/core/GameEngine.js';
 import { toSessionAState, fromSessionAAction } from '../../src/systems/SessionAAdapter.js';

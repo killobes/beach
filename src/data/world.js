@@ -1,4 +1,4 @@
-// OCEAN GAIA V3.2 — 월드 데이터: 6해역 경계, 12섬, 동료 3, 보스 3 + 화석 15, 탐사지 24
+// SpearPals: Blue Harbor — 월드 데이터: 6해역 경계, 12섬, 동료 3, 보스 3 + 화석 15, 탐사지 24
 import { ZONES } from './species.js';
 
 // 월드 4800 x 3200 m. 해역 경계 (x0,z0)-(x1,z1)

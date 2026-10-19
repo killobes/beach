@@ -6,7 +6,7 @@ import { ISLANDS, DIVE_SITES, FOSSILS } from '../../src/data/world.js';
 import { SeededRNG } from '../../src/core/Rng.js';
 import { toSessionAState, fromSessionAAction } from '../../src/systems/SessionAAdapter.js';
 
-describe('OCEAN GAIA V3.2 — 세션 B 엔진 테스트', () => {
+describe('SpearPals: Blue Harbor — 세션 B 엔진 테스트', () => {
   // 1. 200종 데이터 로딩 + 해역 분배
   it('200종 로딩 및 해역 분배 정확', () => {
     const sp = buildSpecies();

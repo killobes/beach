@@ -1,4 +1,4 @@
-// OCEAN GAIA V3.2 — 단위 계약 (세션 B)
+// SpearPals: Blue Harbor — 단위 계약 (세션 B)
 // 위치: m, 물고기 길이: cm, 무게: kg, 시간: s, 각도: rad
 export const UNITS = Object.freeze({
   POSITION: 'm',

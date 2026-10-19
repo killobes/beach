@@ -1,4 +1,4 @@
-// OCEAN GAIA V3.2 — 200종 어류 데이터 (세션 B 전담)
+// SpearPals: Blue Harbor — 200종 어류 데이터 (세션 B 전담)
 // 해역 분배: tropical 40 / glacier 30 / volcanic 30 / mangrove 35 / open_ocean 40 / deep_sea 25
 // 단위: 길이 cm, 무게 kg. 실측 미확인 수치는 GAME_ESTIMATE.
 import { SeededRNG } from '../core/Rng.js';

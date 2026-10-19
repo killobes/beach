@@ -1,4 +1,4 @@
-// OCEAN GAIA V3.2 — 장비 데이터 (작살 24 / 산소통 6 / 잠수복 6 / 선박 개조 5)
+// SpearPals: Blue Harbor — 장비 데이터 (작살 24 / 산소통 6 / 잠수복 6 / 선박 개조 5)
 export const SPEARS = [
   { id:'sp01', name:'목재 작살',    rangeM:6,  handling:0.9, stability:0.7, effect:'none',     price:0,    unlock:{ shipLevel:1 } },
   { id:'sp02', name:'무쇠 작살',    rangeM:8,  handling:0.9, stability:0.8, effect:'none',     price:120,  unlock:{ shipLevel:1 } },

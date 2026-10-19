@@ -1,4 +1,4 @@
-// OCEAN GAIA V3.2 — 데이터 정합성 검사 (세션 B)
+// SpearPals: Blue Harbor — 데이터 정합성 검사 (세션 B)
 import { describe, it, expect } from 'vitest';
 import { buildSpecies, weightFromLength, ZONES } from '../../src/data/species.js';
 import { SPEARS, TANKS, SUITS, SHIP_UPGRADES } from '../../src/data/equipment.js';
