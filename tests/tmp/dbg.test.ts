@@ -1,5 +1,5 @@
 import { it } from "vitest";
-import { createGame } from "../src/core/GameEngine";
+import { createGame } from "../../src/core/GameEngine";
 
 it("dbg", () => {
   const g = createGame({ seed: 12345 });

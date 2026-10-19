@@ -8,6 +8,7 @@ import type { Species } from "../data/speciesTypes";
 import { rollSpecimenSize, type GrowthStage, type Sex } from "../creatures/WeightModel";
 import { Rng } from "../core/Rng";
 import { WORLD, clamp } from "../core/units";
+import { ISLANDS } from "../data/world";
 
 export interface Specimen {
   id: string; // fish_{speciesId}_{seq} — 세션 A 계약 형식과 통일
@@ -32,9 +33,27 @@ export type BehaviorState =
   | "IDLE" | "SCHOOL_MOVE" | "SOLO_ROAM" | "FORAGING" | "FLEEING"
   | "AMBUSH_WAIT" | "BENTHIC_REST" | "MIGRATING" | "NIGHT_PATROL";
 
-export function makeSpecimen(sp: Species, seq: number, rng: Rng, zoneBounds: { xMin: number; xMax: number; zMin: number; zMax: number }): Specimen {
+export function makeSpecimen(sp: Species, seq: number, rng: Rng, zoneBounds: { xMin: number; xMax: number; zMin: number; zMax: number }, anchor?: { x: number; z: number }): Specimen {
   const size = rollSpecimenSize(sp, rng);
   const depth = rng.range(Math.max(0.5, sp.habitat.depthMinM), sp.habitat.depthMaxM);
+  // 앵커 주변 스폰: 개체가 월드 어디에나 생성되어 다이버가 물리적으로 접근 불가능해지는 것을 방지.
+  // 반경은 해역 경계로 클램프하며, 앵커가 섬 내부면 최소 회랑 거리(반경+15m) 바깥으로 밀어낸다.
+  let x = rng.range(zoneBounds.xMin, zoneBounds.xMax);
+  let z = rng.range(zoneBounds.zMin, zoneBounds.zMax);
+  if (anchor) {
+    const r = rng.range(12, 45), th = rng.range(-Math.PI, Math.PI);
+    x = clamp(anchor.x + Math.sin(th) * r, zoneBounds.xMin, zoneBounds.xMax);
+    z = clamp(anchor.z + Math.cos(th) * r, zoneBounds.zMin, zoneBounds.zMax);
+    for (const isl of ISLANDS) {
+      const d = Math.hypot(x - isl.x, z - isl.z);
+      const minD = isl.radiusM + 15;
+      if (d < minD) {
+        const k = d === 0 ? 1 : minD / d;
+        x = clamp(isl.x + (x - isl.x) * k, zoneBounds.xMin, zoneBounds.xMax);
+        z = clamp(isl.z + (z - isl.z) * k, zoneBounds.zMin, zoneBounds.zMax);
+      }
+    }
+  }
   return {
     id: `fish_${sp.id}_${String(seq).padStart(4, "0")}`,
     speciesId: sp.id,
@@ -42,9 +61,9 @@ export function makeSpecimen(sp: Species, seq: number, rng: Rng, zoneBounds: { x
     massKg: size.massKg,
     growthStage: size.growthStage,
     sex: size.sex,
-    x: rng.range(zoneBounds.xMin, zoneBounds.xMax),
+    x,
     y: -depth,
-    z: rng.range(zoneBounds.zMin, zoneBounds.zMax),
+    z,
     headingRad: rng.range(-Math.PI, Math.PI),
     behaviorState: initialBehavior(sp),
     energy: rng.range(0.6, 1.0),

@@ -143,7 +143,9 @@ export function createGame(config: GameConfig): GameInstance {
     return {
       version: GAME_VERSION, schemaVersion: SAVE_SCHEMA_VERSION, seed, weatherRngSeed: 0x51ed270b,
       gameSeconds: 8 * 60, day: 1, season: "SPRING", weather: "CLEAR", tideLevel: 0, currentSpeedMs: 1,
-      ship: { position: { ...WORLD.START_SHIP }, headingRad: Math.PI / 2, speedMs: 0, stage: 1 },
+      // 시작 위치는 산호항 반경(90m) 바깥의 항구 앞바다 — 계약 좌표(755,1780)는 섬 중심이므로
+      // 그 상태에서 전진하면 즉시 섬 충돌로 막혀 출항 자체가 불가능하다. 섬 남쪽 회랑으로 배치.
+      ship: { position: { x: WORLD.START_SHIP.x, y: 0, z: WORLD.START_SHIP.z + 100 }, headingRad: Math.PI, speedMs: 0, stage: 1 },
       diver: { mode: "ON_SHIP", position: { ...WORLD.START_SHIP }, airCurrent: 100, airMax: 100, depthM: 0 },
       shells: 120,
       ownedEquipment: { harpoon_01: true, tank_01: true, suit_01: true },
@@ -548,12 +550,14 @@ export function createGame(config: GameConfig): GameInstance {
     const spec = state.specimens.find((s) => s.id === specimenId && s.alive);
     if (!spec) return fail("대상 개체가 존재하지 않음 (ID 불일치)");
     const harp = currentHarpoon();
-    // 1) 장비 사거리 판정 — A가 선언한 거리가 사거리 밖이면 좌표 검증보다 먼저 차단 (계약: distanceM 기준)
-    if (distanceM > harp.rangeM) return fail(`사거리 초과 (${harp.rangeM}m)`);
-    // 2) 실제 거리 검증: 다이버 ↔ 개체 3D 거리와 A가 전달한 거리의 오차 허용 (치트 방지).
-    //    명중 판정은 실측 기준으로 하되, 오차 한계(6m) 이내의 원거리 표적은 작살이 빗나간다.
+    // 1) 실제 거리 산출 후 사거리 판정 — 실측 우선(선언값만 믿는 치트 경로 차단).
+    //    선언 distanceM과 실측 차이가 크면 "사거리 초과"로 처리한다(원격 좌표 조작 방지).
     const real = Math.hypot(spec.x - state.diver.position.x, spec.y - state.diver.position.y, spec.z - state.diver.position.z);
-    if (Math.abs(real - distanceM) > 6) return fail(`거리 불일치 (실측 ${Math.round(real)}m) — 치트/오적용 방지`);
+    const effectiveRange = Math.max(harp.rangeM, distanceM - 6);
+    if (real > effectiveRange || distanceM > harp.rangeM + 6) {
+      return fail(`사거리 초과 (유효 ${harp.rangeM}m, 실측 ${Math.round(real * 10) / 10}m)`);
+    }
+    // 2) 이후 명중·규칙 판정은 실측 거리 기준
     // 어업 규칙: 작살은 수면 아래에서 발사한다. 표적이 수면 위면 명중 판정 대상이 아님
     if (spec.y >= 0 && state.diver.position.y >= 0) return fail("빗나감 (수면 위 표적 — 입수 후 발사)");
     // 원거리 한계: 실측 기준 사거리를 벗어난 표적(선언값 오차 범위 내라도)은 작살이 도달하지 못해 빗나간다
