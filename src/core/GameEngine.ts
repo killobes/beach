@@ -266,8 +266,18 @@ export function createGame(config: GameConfig): GameInstance {
         // 계약: y축 위쪽. 수심 = -y. dy < 0 → 하강, dy > 0 → 상승. 수평·수직 입력 독립 적용.
         const nx = clamp(p.x + clamp(dx, -1, 1) * step, 0, WORLD.WIDTH_M);
         const nz = clamp(p.z + clamp(dz, -1, 1) * step, 0, WORLD.DEPTH_M);
-        const targetDepth = clamp(-p.y + clamp(-dy, -1, 1) * step, 0, WORLD.MAX_DEPTH_M);
-        if (targetDepth > suit.maxDepthM) return fail(`잠수복 한계 초과 (${suit.name}: 최대 ${suit.maxDepthM}m)`);
+        // 수직 이동은 "한계를 넘지 않는 범위까지만" 부분 적용 — 완전 차단 시 잠수사가
+        // 임의 수심에서 상하 이동 자체가 동결되는 문제가 발생한다(수평 이동은 계속 허용).
+        const curDepth = -p.y;
+        const depthLimit = Math.min(suit.maxDepthM, WORLD.MAX_DEPTH_M);
+        const vInput = clamp(-dy, -1, 1) * step; // dy < 0 → 하강(깊이 증가)
+        let targetDepth: number;
+        if (vInput > 0) {
+          // 하강: 한계까지만 진행. 이미 한계면 상승/수평 이동은 계속 유효해야 하므로 실패 반환 없음.
+          targetDepth = Math.min(curDepth + vInput, depthLimit);
+        } else {
+          targetDepth = Math.max(0, curDepth + vInput); // 상승: 수면(0)까지 제한
+        }
         const zone = zoneAt(nx, nz);
         if (!zone) return fail("월드 밖");
         const dmax = zone.depthRangeM[1];
@@ -339,10 +349,12 @@ export function createGame(config: GameConfig): GameInstance {
         }
         if (!spec) return fail("관찰 대상 개체가 존재하지 않음");
         const entry = ensureDex(spec.speciesId);
+        const wasNew = !entry.firstDiscovered;
         entry.observeCount += 1;
-        if (!entry.firstDiscovered) { entry.firstDiscovered = true; addZoneTo(entry, specZoneOf(spec)); }
-        const reward = Math.round(companionBonus("observeReward", 3));
-        state.shells += reward; // 관찰 보상 — 포획과 무관하게 1회성(중복 방지: 종당 첫 발견만 보너스)
+        if (wasNew) { entry.firstDiscovered = true; addZoneTo(entry, specZoneOf(spec)); }
+        // 관찰 보상: 첫 발견 시에만 지급 — 재관찰 중복 지급 방지
+        const reward = wasNew ? Math.round(companionBonus("observeReward", 3)) : 0;
+        state.shells += reward;
         emit();
         return ok({ rewardShells: reward, observeCount: entry.observeCount });
       }
@@ -629,9 +641,14 @@ export function createGame(config: GameConfig): GameInstance {
     if (blocked) {
       // 정박 해제 예외: 계약상 시작 배 좌표(755,1780)는 산호항 중심과 동일하다.
       // 현재 위치가 이미 항구 반경 이내(정박)면 접안 상태에서 전진으로 빠져나올 수 있도록
-      // 첫 이동을 허용한다. 항구 밖에서 다시 섬 안으로 진입하는 일반 경로는 계속 차단된다.
-      const mooredHere = ISLANDS.some((isl) => Math.hypot(state.ship.position.x - isl.x, state.ship.position.z - isl.z) <= isl.radiusM);
-      if (!mooredHere) {
+      // 첫 이동을 허용한다. 단, 허용 범위는 "접한 섬 내부로 더 깊숙이 들어가지 않는" 수준까지만 —
+      // 항구 외곽을 지나 다시 섬 안쪽으로 되돌아들어가는 경로(우회 항해 중 재침범)는 차단한다.
+      const mooredIsland = ISLANDS.find((isl) => Math.hypot(state.ship.position.x - isl.x, state.ship.position.z - isl.z) <= isl.radiusM);
+      const stillLeaving =
+        !!mooredIsland &&
+        Math.hypot(nx - mooredIsland.x, nz - mooredIsland.z) >=
+          Math.hypot(state.ship.position.x - mooredIsland.x, state.ship.position.z - mooredIsland.z);
+      if (!(mooredIsland && stillLeaving)) {
         // 충돌 회피: 완전 정지 없이 135° 선회 후 감속 — 섬/경계를 따라 우회 항해 가능
         state.ship.headingRad += Math.PI * 0.75;
         state.ship.speedMs = Math.max(st.maxSpeedMs * 0.25, state.ship.speedMs * 0.5);
