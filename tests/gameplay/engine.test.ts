@@ -190,10 +190,11 @@ describe("게임 엔진 기본", () => {
 
   it("MOVE_SHIP: 전방 이동·월드 경계·섬 충돌·해역 티어 제한", () => {
     // 시작 좌표(755,1780)는 산호항 반경 90m 이내 — 항구에서 정박 해제하듯 먼저 빠져나온 뒤 전진 검증을 수행한다.
+    // 단계1 선박 최고속도 6m/s 기준: 95m 이탈에는 약 16초(가속 포함)가 필요하므로 상한은 60초(1800틱)로 둔다.
     const g = createGame({ seed: SEED, startGameSeconds: 8 * 60 + 3600 }); // 오전 11시(낮)로 폭풍/야간 확률 변수 제거
     const before = g.getSnapshot().ship.position;
     let cleared = false;
-    for (let i = 0; i < 400 && !cleared; i++) {
+    for (let i = 0; i < 1800 && !cleared; i++) {
       g.dispatch({ type: "MOVE_SHIP", forward: 1, turn: 0, dtSec: 1 / 30 });
       const p = g.getSnapshot().ship.position;
       cleared = Math.hypot(p.x - 755, p.z - 1780) > 95;
@@ -280,11 +281,21 @@ describe("포획 시스템", () => {
   });
 
   it("근접 포획 성공 → 창고·도감 갱신, 개체 제거", () => {
-    const g = newGame();
-    const target = g.getSnapshot().specimens.find((s) => {
-      const sp = getSpeciesById(s.speciesId)!;
-      return sp.economy.catchable && !sp.economy.protectedSpecies;
-    })!;
+    // 다이버는 이동 가능 수심 한계(해역 depthRange+40m) 내에 있는 근거리 포획 가능 개체를 목표로 한다.
+    // (원거리·심해 개체까지 포함하는 판정은 '거리 검증 우선' 테스트가 별도로 커버한다.)
+    const g = createGame({ seed: SEED, enableDebugActions: true });
+    g.dispatch({ type: "TICK", dtSec: 5 });
+    const s0 = g.getSnapshot();
+    const shipPos = s0.ship.position;
+    const reachable = s0.specimens.filter((sp) => {
+      const def = getSpeciesById(sp.speciesId)!;
+      if (!def.economy.catchable || def.economy.protectedSpecies) return false;
+      if (Math.hypot(sp.x - shipPos.x, sp.z - shipPos.z) > 80) return false; // 이동 거리 한계 내
+      if (-sp.y > 60) return false; // 기본 잠수복/해역 수심 한계 안전 여유
+      return true;
+    });
+    expect(reachable.length, "테스트 시드에서 도달 가능한 포획 대상이 있어야 함").toBeGreaterThan(0);
+    const target = reachable[0];
     const dist = placeDiverNear(g, target.id);
     expect(dist).toBeGreaterThanOrEqual(0);
     // 시도 횟수 제한 없이 명중할 때까지 (실패 사유는 '빗나감'만 허용)
@@ -626,7 +637,8 @@ describe("월드 시뮬레이션", () => {
     expect(dayNumber({ gameSeconds: 1440 * 8 })).toBe(9);
     expect(seasonOf({ gameSeconds: 0 })).toBe("SPRING");
     expect(seasonOf({ gameSeconds: 1440 * 7 })).toBe("SUMMER");
-    expect(seasonOf({ gameSeconds: 1440 * 28 - 1 })).toBe("SPRING"); // 28일 주기 순환
+    expect(seasonOf({ gameSeconds: 1440 * 28 - 1 })).toBe("WINTER"); // 순환 경계 직전까지 WINTER 유지
+    expect(seasonOf({ gameSeconds: 1440 * 28 })).toBe("SPRING"); // 28일 주기 순환 복귀
   });
 
   it("폭풍 시 일반 어종 스폰 감소 규칙", async () => {
@@ -636,9 +648,11 @@ describe("월드 시뮬레이션", () => {
     expect(speciesCanSpawn(common, common.habitat.zone, envDay)).toBe(false);
     const envClear = { ...envDay, weather: "CLEAR" as const };
     expect(speciesCanSpawn(common, common.habitat.zone, envClear)).toBe(true);
-    // 폭풍에도 EPIC/LEGENDARY는 활성
+    // 폭풍에도 EPIC/LEGENDARY는 활성 — 단, 활동 시간대 규칙은 날씨와 무관하게 적용되므로
+    // 해당 종이 실제로 활동하는 시간대(박명성 6~8시)에서 검사한다.
     const epic = SPECIES.find((s) => s.economy.rarity === "EPIC" && !s.economy.protectedSpecies)!;
-    expect(speciesCanSpawn(epic, epic.habitat.zone, envDay)).toBe(true);
+    const epicEnv: Record<string, number> = { DIURNAL: 12, NOCTURNAL: 23, CREPUSCULAR: 7, ANY: 12 };
+    expect(speciesCanSpawn(epic, epic.habitat.zone, { ...envDay, timeOfDay0to24: epicEnv[epic.habitat.activity] ?? 12 })).toBe(true);
     // 보호·관찰 전용 종은 날씨와 무관하게 일반 스폰 제외
     const prot = SPECIES.find((s) => s.economy.protectedSpecies)!;
     expect(speciesCanSpawn(prot, prot.habitat.zone, envClear)).toBe(false);

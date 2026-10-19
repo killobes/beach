@@ -143,9 +143,8 @@ export function createGame(config: GameConfig): GameInstance {
     return {
       version: GAME_VERSION, schemaVersion: SAVE_SCHEMA_VERSION, seed, weatherRngSeed: 0x51ed270b,
       gameSeconds: 8 * 60, day: 1, season: "SPRING", weather: "CLEAR", tideLevel: 0, currentSpeedMs: 1,
-      // 시작 위치는 산호항 반경(90m) 바깥의 항구 앞바다 — 계약 좌표(755,1780)는 섬 중심이므로
-      // 그 상태에서 전진하면 즉시 섬 충돌로 막혀 출항 자체가 불가능하다. 섬 남쪽 회랑으로 배치.
-      ship: { position: { x: WORLD.START_SHIP.x, y: 0, z: WORLD.START_SHIP.z + 100 }, headingRad: Math.PI, speedMs: 0, stage: 1 },
+      // 고정 계약: 시작 배 좌표 (755, 0, 1780) — 임의 오프셋 금지.
+      ship: { position: { x: WORLD.START_SHIP.x, y: 0, z: WORLD.START_SHIP.z }, headingRad: Math.PI, speedMs: 0, stage: 1 },
       diver: { mode: "ON_SHIP", position: { ...WORLD.START_SHIP }, airCurrent: 100, airMax: 100, depthM: 0 },
       shells: 120,
       ownedEquipment: { harpoon_01: true, tank_01: true, suit_01: true },
@@ -628,10 +627,16 @@ export function createGame(config: GameConfig): GameInstance {
       if (Math.hypot(nx - isl.x, nz - isl.z) < isl.radiusM * 0.85) blocked = true;
     }
     if (blocked) {
-      // 충돌 회피: 완전 정지 없이 135° 선회 후 감속 — 섬/경계를 따라 우회 항해 가능
-      state.ship.headingRad += Math.PI * 0.75;
-      state.ship.speedMs = Math.max(st.maxSpeedMs * 0.25, state.ship.speedMs * 0.5);
-      return;
+      // 정박 해제 예외: 계약상 시작 배 좌표(755,1780)는 산호항 중심과 동일하다.
+      // 현재 위치가 이미 항구 반경 이내(정박)면 접안 상태에서 전진으로 빠져나올 수 있도록
+      // 첫 이동을 허용한다. 항구 밖에서 다시 섬 안으로 진입하는 일반 경로는 계속 차단된다.
+      const mooredHere = ISLANDS.some((isl) => Math.hypot(state.ship.position.x - isl.x, state.ship.position.z - isl.z) <= isl.radiusM);
+      if (!mooredHere) {
+        // 충돌 회피: 완전 정지 없이 135° 선회 후 감속 — 섬/경계를 따라 우회 항해 가능
+        state.ship.headingRad += Math.PI * 0.75;
+        state.ship.speedMs = Math.max(st.maxSpeedMs * 0.25, state.ship.speedMs * 0.5);
+        return;
+      }
     }
     state.ship.position.x = nx; state.ship.position.z = nz;
     // 해역 진입 검사(선박 단계 제한)
